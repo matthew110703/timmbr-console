@@ -1,34 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Timmbr Console
 
-## Getting Started
+The administrative web application for managing the Timmbr commerce platform.
 
-First, run the development server:
+Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind CSS v4**, and **Turbopack / SWC**.
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy `.env.example` to `.env.local`:
 
-## Learn More
+```bash
+cp .env.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+Default configuration:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+PORT=5000
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Start Development Server
 
-## Deploy on Vercel
+```bash
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open [http://localhost:5000](http://localhost:5000) to view the console.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🎨 Local Design System Linking (`../timmbr-ds`)
+
+Timmbr Console consumes the **Timmbr Design System** through published npm packages (`@timmbr/ui`, `@timmbr/theme`, `@timmbr/icons`, etc.).
+
+When developing components concurrently in `../timmbr-ds`, the application uses **`yalc`** for local package linking:
+
+| Command          | Description                                                                                                   |
+| :--------------- | :------------------------------------------------------------------------------------------------------------ |
+| `pnpm ds:status` | Inspect all `@timmbr/*` dependencies and show if they are **Registry (npm)** or **Yalc Local Link**           |
+| `pnpm ds:link`   | Publishes local packages from `../timmbr-ds/packages/*` into local Yalc store and links into `timmbr-console` |
+| `pnpm ds:unlink` | Unlinks all Yalc packages, removes `.yalc/`, and restores published NPM registry packages                     |
+
+### Making Subsequent Edits in `timmbr-ds`
+
+Once linked via `pnpm ds:link`, you **do not** need to re-link `timmbr-console` after making further edits. Simply run in `timmbr-ds`:
+
+```bash
+# In timmbr-ds/
+pnpm yalc:push          # Rebuilds and pushes all packages to active apps
+pnpm yalc:push ui       # Rebuilds and pushes @timmbr/ui only
+pnpm yalc:push theme    # Rebuilds and pushes @timmbr/theme only
+```
+
+Next.js Turbopack will immediately detect the updated files in `.yalc/` and trigger Fast Refresh automatically.
+
+---
+
+## 🧪 Verification Commands
+
+| Command            | Purpose                                   |
+| :----------------- | :---------------------------------------- |
+| `pnpm check-types` | TypeScript type-checking (`tsc --noEmit`) |
+| `pnpm lint`        | ESLint checks                             |
+| `pnpm build`       | Production Next.js build                  |

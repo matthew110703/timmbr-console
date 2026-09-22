@@ -1,4 +1,4 @@
-# Architectural & Operational Rules for AI Agents (Timmbr Console)
+# Architectural Rules for AI Agents (Timmbr Console)
 
 1. **Standalone Architecture**: Timmbr Console is a standalone Next.js App Router application. All administrative features live within `app/(console)/` and authentication within `app/(auth)/`.
 2. **Server-First Principle**: Use Server Components by default. Use Client Components (`"use client"`) only where interactivity requires them (interactive forms, tables, filters, dialogs, dropdowns).

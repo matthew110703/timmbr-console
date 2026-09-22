@@ -3,15 +3,39 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 5000",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "next start -p 5000",
+    "lint": "eslint",
+    "check-types": "tsc --noEmit",
+    "ds:link": "node scripts/ds-link.js link",
+    "ds:unlink": "node scripts/ds-link.js unlink",
+    "ds:status": "node scripts/ds-link.js status",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,yaml,yml}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
+    "@timmbr/hooks": "1.0.0-beta",
+    "@timmbr/icons": "1.0.0-beta",
+    "@timmbr/motion": "1.0.0-beta",
+    "@timmbr/theme": "1.0.0-beta",
+    "@timmbr/ui": "1.0.0-beta",
+    "@timmbr/utils": "1.0.0-beta",
+    "lucide-react": "^1.47.0",
+    "motion": "^13.4.0",
     "next": "16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-hook-form": "^7.88.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -20,8 +44,12 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
+    "prettier": "^3.9.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "yalc": "1.0.0-pre.53"
   },
   "packageManager": "pnpm@11.18.0"
 }
