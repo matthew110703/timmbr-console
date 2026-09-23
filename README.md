@@ -6,6 +6,50 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind
 
 ---
 
+## 📚 Documentation & Knowledge Base
+
+For detailed technical specifications, architecture decisions, and coding standards, visit the [**Timmbr Console Documentation Hub**](./docs/README.md):
+
+- **[System Design & Architecture](./docs/architecture/system-design.md)**: Route groups, Server-First principle, and `timmbr-core` integration.
+- **[Design System Guidelines](./docs/conventions/design-system.md)**: `@timmbr/*` consumption rules, Tailwind v4 setup, and Yalc local workflow.
+- **[Centralized API Client](./docs/conventions/api-client.md)**: `ApiClient` patterns, token management, and Zod form validation.
+- **[Static Strings Convention](./docs/conventions/strings.md)**: Co-located `strings.ts` pattern across all route segments.
+- **[Environment Strategy](./docs/conventions/environment.md)**: Type-safe runtime environment schema validation.
+- **[Port Allocation](./docs/conventions/ports.md)**: Ecosystem-wide port coordination (`console: 5000`).
+
+---
+
+## 📁 Repository Layout
+
+```text
+timmbr-console/
+├── .agents/                 # AI Agent operational rules & guidelines
+├── docs/                    # Central Documentation Hub
+│   ├── README.md            # Knowledge base index & TOC
+│   ├── architecture/        # System design & architecture specs
+│   └── conventions/         # Design system, API client, strings, env, ports
+├── app/                     # Next.js App Router root
+│   ├── (auth)/              # Public authentication route group (/login)
+│   ├── (console)/           # Protected administrative workspace (/dashboard, etc.)
+│   ├── globals.css          # Tailwind CSS v4 & @timmbr/theme injection
+│   ├── layout.tsx           # Global HTML root layout & TimmbrConfigProvider
+│   └── strings.ts           # Root-level metadata & static copy
+├── lib/                     # Application infrastructure & services
+│   ├── api/                 # Typed ApiClient instance & domain service modules
+│   └── env.ts               # Type-safe Zod runtime environment schema
+├── scripts/                 # Operational tooling
+│   └── ds-link.js           # Yalc design system linking orchestrator
+├── types/                   # Shared TypeScript definitions & API contracts
+├── .env.example             # Committed local environment variable defaults
+├── .env.local               # Local developer overrides (gitignored)
+├── AGENTS.md                # Architectural & operational rules for AI agents
+├── package.json             # Dependencies & operational scripts
+├── tsconfig.json            # TypeScript configuration (moduleResolution: bundler)
+└── next.config.ts           # Next.js configuration & package transpilation
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
