@@ -32,29 +32,33 @@ timmbr-console/
 │   ├── README.md            # Knowledge base index
 │   ├── architecture/        # System design & architecture specs
 │   └── conventions/         # Design system, API client, strings, env, ports
-├── app/                     # Next.js App Router root
-│   ├── (auth)/              # Public authentication route group
-│   │   ├── layout.tsx       # Auth container shell layout
-│   │   └── login/           # Admin login route segment
-│   │       ├── page.tsx     # Login view
-│   │       └── strings.ts   # Co-located login copy & labels
-│   ├── (console)/           # Protected administrative route group
-│   │   ├── layout.tsx       # Administrative sidebar & topbar shell
-│   │   └── dashboard/       # Dashboard analytics & KPI overview
-│   │       ├── page.tsx     # Dashboard view
-│   │       └── strings.ts   # Co-located dashboard copy
-│   ├── globals.css          # Tailwind CSS v4 & theme injection
-│   ├── layout.tsx           # Global HTML root layout & TimmbrConfigProvider
-│   ├── page.tsx             # Root redirect to /dashboard or /login
-│   └── strings.ts           # Global root metadata & navigation copy
-├── lib/                     # Shared application utilities & services
-│   ├── api/                 # Centralized API layer
-│   │   ├── client.ts        # Typed ApiClient implementation & ApiError
-│   │   └── auth.ts          # Authentication service calls
-│   └── env.ts               # Type-safe environment validation (Zod)
-├── scripts/                 # Operational tooling
-│   └── ds-link.js           # Yalc-powered local design system link orchestrator
-├── types/                   # TypeScript interfaces & API response contracts
+├── scripts/                 # Operational tooling (commit.mjs, ds-link.mjs)
+├── src/                     # Application source root
+│   ├── app/                 # Next.js App Router root (routes, layouts, strings only)
+│   │   ├── (auth)/          # Public authentication route group
+│   │   │   ├── layout.tsx   # Auth container shell layout
+│   │   │   └── login/       # Admin login route segment
+│   │   │       ├── page.tsx # Login view
+│   │   │       └── strings.ts
+│   │   ├── (console)/       # Protected administrative route group
+│   │   │   ├── layout.tsx   # Administrative sidebar & topbar shell
+│   │   │   └── overview/    # Overview / KPI dashboard
+│   │   │       ├── page.tsx
+│   │   │       └── strings.ts
+│   │   ├── globals.css      # Tailwind CSS v4 & theme injection
+│   │   ├── layout.tsx       # Global HTML root layout & TimmbrConfigProvider
+│   │   ├── page.tsx         # Root redirect to /overview or /login
+│   │   └── strings.ts       # Global root metadata & navigation copy
+│   ├── components/          # Shared UI components (strictly at src level, NEVER in app/)
+│   │   ├── ConsoleSidebar.tsx
+│   │   └── index.ts
+│   ├── lib/                 # Shared application utilities & services
+│   │   ├── api/             # Centralized API layer
+│   │   │   ├── client.ts    # Typed ApiClient implementation & ApiError
+│   │   │   └── auth.ts      # Authentication service calls
+│   │   └── env.ts           # Type-safe environment validation (Zod)
+│   ├── proxy.ts             # Instrumentation proxy
+│   └── types/               # TypeScript interfaces & API response contracts
 ├── .env.example             # Committed local environment variable defaults
 ├── .env.local               # Local developer environment overrides (gitignored)
 ├── AGENTS.md                # AI Agent architectural & operational rules
@@ -73,15 +77,16 @@ Timmbr Console organizes administrative screens into two primary route groups:
 
 - **Purpose**: Houses administrative authentication, multi-factor verification, and credential recovery flows.
 - **Layout**: Centered, distraction-free card container on warm neutral backdrop.
-- **Access**: Publicly accessible; redirects authenticated users to `/dashboard`.
+- **Access**: Publicly accessible; redirects authenticated users to `/overview`.
 
-### 2. `app/(console)` — Protected Administrative Group
+### 2. `src/app/(console)` — Protected Administrative Group
 
 - **Purpose**: Houses the core administrative workspace, catalogs, and commerce management tools.
 - **Layout**: Persistent sidebar navigation, global topbar, breadcrumb hierarchy, user profile dropdown, and scrollable content canvas.
 - **Access**: Guarded; redirects unauthenticated visitors to `/login`.
 - **Target Feature Modules**:
-  - `/dashboard`: High-level metrics, operational KPIs, and recent activities.
+  - `/overview`: High-level metrics, operational KPIs, and recent activities.
+
   - `/products`: Catalog management, variant configuration, and pricing.
   - `/inventory`: Stock levels, locations, and replenishment tracking.
   - `/orders`: Order fulfillment, shipment lifecycle, and refunds.

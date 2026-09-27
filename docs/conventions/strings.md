@@ -15,7 +15,7 @@ All static text constants—including page titles, meta descriptions, button lab
 ## 2. Co-location Convention
 
 ```text
-app/
+src/app/
 ├── strings.ts                 # Global root copy (metadata, brand titles, global fallbacks)
 ├── layout.tsx
 ├── (auth)/
@@ -24,8 +24,8 @@ app/
 │       └── page.tsx
 └── (console)/
     ├── layout.tsx             # Administrative shell (sidebar & topbar copy)
-    ├── dashboard/
-    │   ├── strings.ts         # Copy specific to /dashboard
+    ├── overview/
+    │   ├── strings.ts         # Copy specific to /overview
     │   └── page.tsx
     ├── products/
     │   ├── strings.ts         # Copy specific to /products

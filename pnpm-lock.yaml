@@ -11,20 +11,23 @@ importers:
         specifier: 1.0.0-beta
         version: 1.0.0-beta(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@timmbr/icons":
-        specifier: 1.0.0-beta
-        version: 1.0.0-beta(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 1.1.0
+        version: 1.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@timmbr/motion":
-        specifier: 1.0.0-beta
-        version: 1.0.0-beta(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 1.1.0
+        version: 1.1.0(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@timmbr/theme":
-        specifier: 1.0.0-beta
-        version: 1.0.0-beta
+        specifier: 1.1.0
+        version: 1.1.0
       "@timmbr/ui":
-        specifier: 1.0.0-beta
-        version: 1.0.0-beta(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 1.1.0
+        version: 1.1.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(next@16.3.5(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@timmbr/utils":
-        specifier: 1.0.0-beta
-        version: 1.0.0-beta
+        specifier: 1.1.0
+        version: 1.1.0
+      js-cookie:
+        specifier: ^3.0.8
+        version: 3.0.8
       lucide-react:
         specifier: ^1.47.0
         version: 1.47.0(react@19.2.8)
@@ -50,6 +53,9 @@ importers:
       "@tailwindcss/postcss":
         specifier: ^4
         version: 4.3.3
+      "@types/js-cookie":
+        specifier: ^3.0.6
+        version: 3.0.6
       "@types/node":
         specifier: ^20
         version: 20.19.43
@@ -1543,44 +1549,48 @@ packages:
       react: ">=18.0.0"
       react-dom: ">=18.0.0"
 
-  "@timmbr/icons@1.0.0-beta":
+  "@timmbr/icons@1.1.0":
     resolution:
       {
-        integrity: sha512-Zyn5nAt7Rf3WW7MtOw3Cl5zUEcsK77iRoydb+9Wrhg1P30lKShfxueg3UTw4Ht626SyTkAsLvdQTDbGIsFi2Sw==,
+        integrity: sha512-qxapRhycA+/dRaq8r2cIaP4g7fmjEYxqs/LYmAYIam25qw9p35oQ39XDBoqlzzm5NXIz4GsmHWAQcB4OcMwcUA==,
       }
     peerDependencies:
       react: ">=18.0.0"
       react-dom: ">=18.0.0"
 
-  "@timmbr/motion@1.0.0-beta":
+  "@timmbr/motion@1.1.0":
     resolution:
       {
-        integrity: sha512-qtqPaX2214Lun6Y4/Q4dd473ON1RwPjEnZwkAn3C7feBaBC9ch0zfvik9xR56aRhYhnzVfKhlhPb09WjxFusaw==,
+        integrity: sha512-FBOe2gct52wcovckkitWU+QFrBytt62G7if05n5qSle3mD+TAyK6fwLvM9/vfgswjwC0DaIIP4vK/JB81fWRcA==,
       }
     peerDependencies:
       motion: ">=11.0.0"
       react: ">=18.0.0"
       react-dom: ">=18.0.0"
 
-  "@timmbr/theme@1.0.0-beta":
+  "@timmbr/theme@1.1.0":
     resolution:
       {
-        integrity: sha512-icDOWK54brSxhNURCU2tJ8wdtYw0JV92pGq5GD4qjvgltLxyTMXzlU+EyCYQ1dLeKfbxXfF8FH9pV6StVkTTcg==,
+        integrity: sha512-X7wBIZy1vYamSfhBQm8wAX8tW0WAtCmV6286QaVkayU5NdxdssyN3PiXuQIjFI1v39kIxqVCYx1JiJcxS0pNDA==,
       }
 
-  "@timmbr/ui@1.0.0-beta":
+  "@timmbr/ui@1.1.0":
     resolution:
       {
-        integrity: sha512-C9iC2cLAjoE7SltQZRZKdlkRT05zPiSq3AfGBglv/qjM4EdD1yVzIZBwHoAW8VreEVPtz6XxbAqZaifgIIwDIQ==,
+        integrity: sha512-Oeiirj8sw20IpSS00pXk1wc0+knQpL9pN23vDoF7pLd/+lUkpwBi0DSkDxJW2HIVVI6GDcy/Wwyg/w5L7Uy79Q==,
       }
     peerDependencies:
+      next: ">=13.0.0 || >=14.0.0 || >=15.0.0 || >=16.0.0"
       react: ">=18.0.0"
       react-dom: ">=18.0.0"
+    peerDependenciesMeta:
+      next:
+        optional: true
 
-  "@timmbr/utils@1.0.0-beta":
+  "@timmbr/utils@1.1.0":
     resolution:
       {
-        integrity: sha512-QEfZ/IqjrxRYeucylrvoD07pnQ4WgIo8Bbn4I2fCZA62l9XHFpnVCEv8Ut+SSNO/iZvQGb6fJACY9ScptNzLpg==,
+        integrity: sha512-/KpM+x++MzoiH+AyjyGOU7CQq4qs9QxEtP8rb+0uioWQqgpHFgA5/wKZHWtlBNrBQ68uwg+ti+RV2mN6xdlZrg==,
       }
 
   "@tybys/wasm-util@0.10.4":
@@ -1593,6 +1603,12 @@ packages:
     resolution:
       {
         integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==,
+      }
+
+  "@types/js-cookie@3.0.6":
+    resolution:
+      {
+        integrity: sha512-wkw9yd1kEXOPnvEeEV1Go1MmxtBJL0RR79aOTAApecWFVu7w0NNXNqhcWgvw2YgZDYadliXkl14pa3WXw5jlCQ==,
       }
 
   "@types/json-schema@7.0.15":
@@ -3172,6 +3188,12 @@ packages:
       }
     hasBin: true
 
+  js-cookie@3.0.8:
+    resolution:
+      {
+        integrity: sha512-yeJd4aNAdYZQjaon2bpD/Gb0B/omw7HQOsynXXcOiWVCacbBcPlgn8S/d1X6blFSaHao7ozqtW7NZW19xpCtIw==,
+      }
+
   js-tokens@4.0.0:
     resolution:
       {
@@ -3238,6 +3260,13 @@ packages:
         integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==,
       }
     engines: { node: ">=4.0" }
+
+  jwt-decode@4.0.0:
+    resolution:
+      {
+        integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==,
+      }
+    engines: { node: ">=18" }
 
   keyv@4.5.4:
     resolution:
@@ -5431,23 +5460,23 @@ snapshots:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
-  "@timmbr/icons@1.0.0-beta(react-dom@19.2.8(react@19.2.8))(react@19.2.8)":
+  "@timmbr/icons@1.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)":
     dependencies:
-      "@timmbr/utils": 1.0.0-beta
+      "@timmbr/utils": 1.1.0
       lucide-react: 1.47.0(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
-  "@timmbr/motion@1.0.0-beta(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)":
+  "@timmbr/motion@1.1.0(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)":
     dependencies:
-      "@timmbr/utils": 1.0.0-beta
+      "@timmbr/utils": 1.1.0
       motion: 13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
-  "@timmbr/theme@1.0.0-beta": {}
+  "@timmbr/theme@1.1.0": {}
 
-  "@timmbr/ui@1.0.0-beta(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)":
+  "@timmbr/ui@1.1.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(next@16.3.5(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)":
     dependencies:
       "@radix-ui/react-accordion": 1.2.20(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@radix-ui/react-avatar": 1.2.6(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -5466,21 +5495,24 @@ snapshots:
       "@radix-ui/react-toast": 1.2.23(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@radix-ui/react-tooltip": 1.2.16(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@timmbr/hooks": 1.0.0-beta(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      "@timmbr/icons": 1.0.0-beta(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      "@timmbr/motion": 1.0.0-beta(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      "@timmbr/theme": 1.0.0-beta
-      "@timmbr/utils": 1.0.0-beta
+      "@timmbr/icons": 1.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      "@timmbr/motion": 1.1.0(motion@13.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      "@timmbr/theme": 1.1.0
+      "@timmbr/utils": 1.1.0
       class-variance-authority: 0.7.1
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
+    optionalDependencies:
+      next: 16.3.5(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     transitivePeerDependencies:
       - "@types/react"
       - "@types/react-dom"
       - motion
 
-  "@timmbr/utils@1.0.0-beta":
+  "@timmbr/utils@1.1.0":
     dependencies:
       clsx: 2.1.1
+      jwt-decode: 4.0.0
       tailwind-merge: 3.7.0
 
   "@tybys/wasm-util@0.10.4":
@@ -5489,6 +5521,8 @@ snapshots:
     optional: true
 
   "@types/estree@1.0.9": {}
+
+  "@types/js-cookie@3.0.6": {}
 
   "@types/json-schema@7.0.15": {}
 
@@ -6589,6 +6623,8 @@ snapshots:
 
   jiti@2.7.0: {}
 
+  js-cookie@3.0.8: {}
+
   js-tokens@4.0.0: {}
 
   js-yaml@4.3.2:
@@ -6619,6 +6655,8 @@ snapshots:
       array.prototype.flat: 1.3.3
       object.assign: 4.1.7
       object.values: 1.2.1
+
+  jwt-decode@4.0.0: {}
 
   keyv@4.5.4:
     dependencies:

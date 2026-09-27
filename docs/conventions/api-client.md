@@ -16,30 +16,48 @@ All backend communication must go through typed domain service modules located i
 
 The `ApiClient` provides:
 
-1. **Centralized Base URL**: Reads `NEXT_PUBLIC_API_URL` through validated runtime schema (`lib/env.ts`).
-2. **Automatic Auth Injection**: Dynamically attaches `Authorization: Bearer <token>` headers via a registered `tokenGetter`.
-3. **401 Unauthorized Interceptor**: Triggers token refresh or redirects to `/login` via `onUnauthorized`.
-4. **Normalized Error Handling**: Non-2xx HTTP responses throw a strongly-typed `ApiError` containing `statusCode`, `message`, and optional backend validation `details`.
-5. **Standardized Verbs**: Convenience methods for `api.get()`, `api.post()`, `api.put()`, `api.patch()`, and `api.delete()`.
+1. **Centralized Base URL**: Reads `NEXT_PUBLIC_API_URL` through validated runtime schema (`src/lib/env.ts`).
+2. **Automatic Auth Injection**: Dynamically attaches `Authorization: Bearer <token>` headers via `getAccessToken()`.
+3. **Automatic Refresh Token Queue**: On `401 Unauthorized` responses (excluding auth endpoints), concurrent requests pause and queue while a single `POST /auth/refresh` request is dispatched with credentials. On success, `accessToken` is updated and all queued requests replay automatically.
+4. **Normalized Error Handling**: Non-2xx HTTP responses throw a strongly-typed `ApiError` containing `statusCode`, `message`, and backend validation `details`.
+5. **Seamless Response Unwrapping**: Automatically detects and extracts `data` payloads wrapped by `timmbr-core`'s `TransformInterceptor` (`{ success: true, data: T }`).
+6. **Standardized Verbs**: Convenience methods for `api.get()`, `api.post()`, `api.put()`, `api.patch()`, and `api.delete()`.
 
 ---
 
-## 3. Directory Structure
+## 3. Directory Structure: Global vs Modular APIs
+
+To prevent `src/lib/api/` from becoming cluttered with dozens of domain APIs, architecture is separated into:
+
+- **Global Infrastructure** (`src/lib/api/`): `client.ts` (the `ApiClient` singleton, 401 refresh queue, `ApiError`) and `routes.ts` (`API_ROUTES` static dictionary).
+- **Modular APIs** (`src/app/<module>/api/`): Every domain feature maintains an `api/` folder inside its own module directory.
 
 ```text
-lib/api/
-├── client.ts         # ApiClient class definition, ApiError, and default singleton export
-├── auth.ts           # Authentication & session refresh endpoints
-├── products.ts       # Product catalog CRUD endpoints
-├── orders.ts         # Orders & fulfillment endpoints
-└── inventory.ts      # Stock level & warehouse endpoints
+src/
+├── lib/
+│   └── api/
+│       ├── client.ts              # ApiClient class definition, 401 refresh queue, and api singleton
+│       ├── routes.ts              # Global static endpoints dictionary matching timmbr-core (API_ROUTES)
+│       └── index.ts               # Global export (client, routes)
+└── app/
+    ├── (auth)/
+    │   └── api/
+    │       ├── auth.ts            # authApi implementation (login, refresh, logout, getProfile)
+    │       └── index.ts           # Module export
+    └── (console)/
+        ├── orders/
+        │   └── api/
+        │       └── orders.ts      # ordersApi implementation
+        └── products/
+            └── api/
+                └── products.ts    # productsApi implementation
 ```
 
 ---
 
-## 4. Defining a Domain API Module
+## 4. Static Routes & Modular API Example
 
-Every feature domain in `timmbr-console` maintains a dedicated file under `lib/api/`.
+Every feature domain uses route constants from `src/lib/api/routes.ts`:
 
 ### Example: `lib/api/products.ts`
 

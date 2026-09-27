@@ -21,10 +21,11 @@ Living Storybook reference: [https://timmbr-ds-storybook.vercel.app](https://tim
 
 ## 2. Fundamental Consumption Rules
 
-### Rule 1: No Ad-Hoc Styled Elements
+### Rule 1: Component-First Hierarchy (Inspect Design System First)
 
-- All UI elements in `timmbr-console` must be imported from `@timmbr/ui`.
-- Never write ad-hoc styled HTML tags (`<button className="...">`, `<input className="...">`, `<div className="card">`) when a design system primitive exists.
+- **First Priority**: Before writing ANY UI markup, always inspect `@timmbr/ui` to verify if an existing primitive matches the requirement.
+- Never write ad-hoc styled HTML tags (`<button className="...">`, `<input className="...">`, `<div className="card">`, `<h1>`, `<p>`) when a design system primitive exists.
+- Native HTML elements are ONLY permitted for semantic wrappers (such as `<form>`, `<main>`, `<nav>`) or when no suitable primitive exists. Any other use must be justified or escalated under Rule 2.
 - Supported primitives include:
   - **Layout**: `Container`, `Grid`, `Center`, `Stack`, `Inline`
   - **Form**: `Input`, `Textarea`, `Select`, `Radio`, `Checkbox`, `Switch`, `RangeSlider`, `Label`, `FormField`
@@ -48,6 +49,19 @@ Living Storybook reference: [https://timmbr-ds-storybook.vercel.app](https://tim
 ### Rule 4: Co-located Strings Integration
 
 - Static text rendered inside components (e.g., button labels, placeholder text, field error messages) must always be sourced from the route's co-located `strings.ts`.
+
+### Rule 5: Subcomponents Architecture for Complex Components
+
+- When contributing or consuming complex components (such as `SideBarNavigation`), internal interactive primitives and modular elements are organized under a `subcomponents/` directory (e.g., `SidebarBranding`, `SidebarToggle`, `SidebarNavItem`, `SidebarPopoverMenu`, `SidebarFooter`).
+- State logic, route-matching algorithms, and persistence helpers reside in a co-located `ComponentName.helpers.ts` or static content file.
+- All subcomponents and types remain cleanly accessible through the primary component barrel export.
+
+### Rule 6: Motion Animations First, Vanilla CSS Fallback
+
+- **Centralization in `@timmbr/motion`**: All motion animations, spring physics, transition tokens, and animation variants must stay strictly inside `@timmbr/motion`. All other packages (`@timmbr/ui`, apps) must ONLY consume from `@timmbr/motion`. Never write ad-hoc motion physics or variants inside components.
+- **Motion First**: Every interactive component must prioritize physics-based **motion animations** powered by `@timmbr/motion` (`motion/react`, `AnimatePresence`, spring transitions, layout animations).
+- Components must implement the `motion?: MotionProp` interface and subscribe to `useGlobalAnimation()`.
+- **Vanilla CSS Fallback**: When motion is disabled (`motion={false}`, `disableAnimations={true}`, reduced-motion preferences, or non-motion contexts), components must cleanly fall back to vanilla CSS transitions and standard keyframes with zero layout breaking or visual glitches.
 
 ---
 
@@ -77,7 +91,7 @@ export default function RootLayout({
 }
 ```
 
-### Tailwind CSS v4 Configuration (`app/globals.css`)
+### Tailwind CSS v4 Configuration (`src/app/globals.css`)
 
 Tailwind CSS v4 imports the centralized theme stylesheet and specifies `@source` paths for component scanning:
 
@@ -85,10 +99,12 @@ Tailwind CSS v4 imports the centralized theme stylesheet and specifies `@source`
 @import "tailwindcss";
 @import "@timmbr/theme/theme.css";
 
-@source "./node_modules/@timmbr/ui/dist";
-@source "./node_modules/@timmbr/icons/dist";
-@source "./app/**/*.{js,ts,jsx,tsx}";
-@source "./components/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@timmbr/ui/dist";
+@source "../../.yalc/@timmbr/ui/dist";
+@source "../../node_modules/@timmbr/icons/dist";
+@source "../../.yalc/@timmbr/icons/dist";
+@source "./**/*.{js,ts,jsx,tsx}";
+@source "../**/*.{js,ts,jsx,tsx}";
 ```
 
 ### Transpilation Configuration (`next.config.ts`)
@@ -126,11 +142,19 @@ Raw symlinks (`pnpm link`) point to absolute paths outside the `timmbr-console` 
 
 ### Management Commands in `timmbr-console`
 
-| Command          | Description                                                                                       |
-| :--------------- | :------------------------------------------------------------------------------------------------ |
-| `pnpm ds:status` | Inspect all `@timmbr/*` dependencies and show if they are **Registry (npm)** or **Yalc Link**     |
-| `pnpm ds:link`   | Builds and publishes local packages from `../timmbr-ds` into Yalc and links into `timmbr-console` |
-| `pnpm ds:unlink` | Unlinks all Yalc packages, removes `.yalc/`, and restores clean NPM registry packages             |
+| Command                        | Description                                                                                                   |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| `pnpm ds:status`               | Inspect all `@timmbr/*` dependencies and show if they are **Registry (npm)** or **Yalc Link**                 |
+| `pnpm ds:link [packages...]`   | Publishes and links specified packages (or all if none specified) into `timmbr-console`                       |
+| `pnpm ds:unlink [packages...]` | Unlinks specified packages (or all if none specified) and restores clean NPM registry packages                |
+| `pnpm commit`                  | Interactive conventional commit CLI; automatically unlinks Yalc and restores registry files before committing |
+
+### Commit Safety & Automatic Unlinking
+
+To prevent accidental commits of local `file:.yalc/...` paths into Git and breaking CI/CD:
+
+- Running `pnpm commit` automatically checks if any `@timmbr/*` packages are linked.
+- If linked, it automatically unlinks the design system, restores `package.json` and `pnpm-lock.yaml` to registry versions, stages them, and executes `git commit`.
 
 ### Making Subsequent Edits in `timmbr-ds`
 

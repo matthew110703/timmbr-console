@@ -12,14 +12,12 @@ const dmSerif = DM_Serif_Display({
 });
 
 const manrope = Manrope({
-  weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
 
 const outfit = Outfit({
-  weight: ["500", "600", "700", "800"],
   subsets: ["latin"],
   variable: "--font-title",
   display: "swap",
@@ -43,7 +41,12 @@ export default function RootLayout({
       className={`${manrope.variable} ${dmSerif.variable} ${outfit.variable}`}
     >
       <body>
-        <TimmbrConfigProvider config={{ theme: { mode: "light" } }}>
+        <TimmbrConfigProvider
+          config={{
+            theme: { mode: "light" },
+            toast: { position: "bottom-right", duration: 4000 },
+          }}
+        >
           {children}
         </TimmbrConfigProvider>
       </body>

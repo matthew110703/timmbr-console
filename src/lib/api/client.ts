@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import type { ApiErrorResponse } from "@/types/api";
+import { API_ROUTES, API_PREFIX } from "./routes";
 
 export class ApiError extends Error {
   public statusCode: number;
@@ -18,20 +19,41 @@ export interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
   token?: string;
   skipAuth?: boolean;
+  _retry?: boolean;
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+}
+
+interface QueuedRequest {
+  resolve: (token: string | null) => void;
+  reject: (error: Error) => void;
 }
 
 export class ApiClient {
   private baseUrl: string;
   private tokenGetter?: () => string | null | Promise<string | null>;
+  private tokenSetter?: (token: string | null) => void | Promise<void>;
   private onUnauthorized?: () => void | Promise<void>;
+
+  // Token refresh state
+  private isRefreshing = false;
+  private failedQueue: QueuedRequest[] = [];
 
   constructor(config?: {
     baseUrl?: string;
     tokenGetter?: () => string | null | Promise<string | null>;
+    tokenSetter?: (token: string | null) => void | Promise<void>;
     onUnauthorized?: () => void | Promise<void>;
   }) {
-    this.baseUrl = config?.baseUrl || env.NEXT_PUBLIC_API_URL;
+    const rawBaseUrl = config?.baseUrl || env.NEXT_PUBLIC_API_URL;
+    const cleanHost = rawBaseUrl
+      .replace(/\/+$/, "")
+      .replace(/\/api\/v\d+\/?$/, "");
+    this.baseUrl = `${cleanHost}${API_PREFIX}`;
     this.tokenGetter = config?.tokenGetter;
+    this.tokenSetter = config?.tokenSetter;
     this.onUnauthorized = config?.onUnauthorized;
   }
 
@@ -39,8 +61,25 @@ export class ApiClient {
     this.tokenGetter = getter;
   }
 
+  public setTokenSetter(
+    setter: (token: string | null) => void | Promise<void>,
+  ) {
+    this.tokenSetter = setter;
+  }
+
   public setOnUnauthorized(callback: () => void | Promise<void>) {
     this.onUnauthorized = callback;
+  }
+
+  private processQueue(error: Error | null, token: string | null = null) {
+    this.failedQueue.forEach((prom) => {
+      if (error) {
+        prom.reject(error);
+      } else {
+        prom.resolve(token);
+      }
+    });
+    this.failedQueue = [];
   }
 
   private buildUrl(
@@ -61,11 +100,88 @@ export class ApiClient {
     return url.toString();
   }
 
+  /**
+   * Attempts to refresh the access token using the HTTP-only refresh cookie.
+   */
+  private async executeTokenRefresh(): Promise<string> {
+    const refreshUrl = this.buildUrl(API_ROUTES.AUTH.REFRESH);
+
+    const response = await fetch(refreshUrl, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new ApiError(
+        response.status,
+        "Session expired. Please log in again.",
+      );
+    }
+
+    const payload = await response.json();
+    // Support either { success: true, data: { accessToken } } from timmbr-core or direct { accessToken }
+    const accessToken: string =
+      payload?.data?.accessToken || payload?.accessToken;
+
+    if (!accessToken) {
+      throw new ApiError(500, "Malformed refresh token response from server");
+    }
+
+    if (this.tokenSetter) {
+      await this.tokenSetter(accessToken);
+    }
+
+    return accessToken;
+  }
+
+  /**
+   * Public interface to refresh the access token with mutex locking.
+   * If a refresh is already in-flight, returns a Promise waiting for the active refresh.
+   */
+  public async refreshToken(): Promise<string> {
+    if (this.isRefreshing) {
+      return new Promise<string>((resolve, reject) => {
+        this.failedQueue.push({
+          resolve: (token) => {
+            if (token) resolve(token);
+            else
+              reject(
+                new ApiError(401, "Session expired. Please log in again."),
+              );
+          },
+          reject,
+        });
+      });
+    }
+
+    this.isRefreshing = true;
+
+    try {
+      const newAccessToken = await this.executeTokenRefresh();
+      this.processQueue(null, newAccessToken);
+      return newAccessToken;
+    } catch (refreshError) {
+      this.processQueue(refreshError as Error, null);
+      if (this.onUnauthorized) {
+        await this.onUnauthorized();
+      }
+      throw refreshError;
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
   public async request<T = unknown>(
     endpoint: string,
     options: RequestOptions = {},
   ): Promise<T> {
-    const { params, body, headers, token, skipAuth, ...restOptions } = options;
+    const { params, body, headers, token, skipAuth, _retry, ...restOptions } =
+      options;
+
+    const isAuthRoute =
+      endpoint === API_ROUTES.AUTH.LOGIN ||
+      endpoint === API_ROUTES.AUTH.REFRESH ||
+      endpoint === API_ROUTES.AUTH.LOGOUT;
 
     const requestHeaders = new Headers(headers);
 
@@ -78,11 +194,12 @@ export class ApiClient {
     }
 
     // Auth injection
-    if (!skipAuth) {
+    if (!skipAuth && !isAuthRoute) {
       let resolvedToken = token;
       if (!resolvedToken && this.tokenGetter) {
         resolvedToken = (await this.tokenGetter()) || undefined;
       }
+
       if (resolvedToken && !requestHeaders.has("Authorization")) {
         requestHeaders.set("Authorization", `Bearer ${resolvedToken}`);
       }
@@ -114,8 +231,33 @@ export class ApiClient {
       );
     }
 
-    if (response.status === 401 && this.onUnauthorized) {
-      await this.onUnauthorized();
+    // ── 401 Handling & Automatic Refresh Token Mechanism ──
+    if (response.status === 401 && !skipAuth && !isAuthRoute && !_retry) {
+      // Check for JWT error code from the BE (e.g. TOKEN_EXPIRED, UNAUTHORIZED, TOKEN_INVALID)
+      let isJwtError = true;
+      try {
+        const errorJson = (await response.clone().json()) as ApiErrorResponse;
+        if (errorJson?.code) {
+          isJwtError =
+            errorJson.code === "TOKEN_EXPIRED" ||
+            errorJson.code === "UNAUTHORIZED" ||
+            errorJson.code === "TOKEN_INVALID";
+        }
+      } catch {}
+
+      if (isJwtError) {
+        try {
+          const newAccessToken = await this.refreshToken();
+          // Retry original request with the new access token
+          return this.request<T>(endpoint, {
+            ...options,
+            token: newAccessToken,
+            _retry: true,
+          });
+        } catch {
+          throw new ApiError(401, "Session expired. Please log in again.");
+        }
+      }
     }
 
     if (!response.ok) {
@@ -143,7 +285,17 @@ export class ApiClient {
 
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
-      return (await response.json()) as T;
+      const json = await response.json();
+      // Seamlessly unwrap { success: true, data: T } from timmbr-core TransformInterceptor
+      if (
+        json &&
+        typeof json === "object" &&
+        "data" in json &&
+        json.success === true
+      ) {
+        return json.data as T;
+      }
+      return json as T;
     }
 
     return (await response.text()) as unknown as T;

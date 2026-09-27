@@ -1,3 +1,9 @@
 allowBuilds:
   sharp: false
   unrs-resolver: false
+minimumReleaseAgeExclude:
+  - "@timmbr/icons@1.1.0"
+  - "@timmbr/motion@1.1.0"
+  - "@timmbr/theme@1.1.0"
+  - "@timmbr/ui@1.1.0"
+  - "@timmbr/utils@1.1.0"
