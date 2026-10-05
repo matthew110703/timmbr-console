@@ -4,7 +4,15 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Tag, User, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Layers,
+  Package,
+  Tags,
+  Award,
+  User,
+  LogOut,
+} from "lucide-react";
 import {
   SideBarNavigation,
   toast,
@@ -59,11 +67,24 @@ export function ConsoleSidebar({
         icon: <LayoutDashboard className="size-5" />,
       },
       {
-        label: strings.nav.products,
-        icon: <Tag className="size-5" />,
+        label: strings.nav.catalog,
+        icon: <Layers className="size-5" />,
         items: [
-          { label: strings.nav.allProducts, href: "/products" },
-          { label: strings.nav.categories, href: "/categories" },
+          {
+            label: strings.nav.products,
+            href: "/products",
+            icon: <Package className="size-4" />,
+          },
+          {
+            label: strings.nav.categories,
+            href: "/categories",
+            icon: <Tags className="size-4" />,
+          },
+          {
+            label: strings.nav.brands,
+            href: "/brands",
+            icon: <Award className="size-4" />,
+          },
         ],
       },
     ],

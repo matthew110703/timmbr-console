@@ -1,2 +1,3 @@
+pnpm ds:check
 pnpm exec lint-staged
 pnpm check-types

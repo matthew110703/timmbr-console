@@ -24,6 +24,12 @@ export const API_ROUTES = {
   },
   ADMIN: {
     USERS: "/admin/users",
+    CATEGORIES: "/admin/categories",
+  },
+  MEDIA: {
+    PRESIGNED_URL: "/media/presigned-url",
+    URL: "/media/url",
+    ROOT: "/media",
   },
 } as const;
 

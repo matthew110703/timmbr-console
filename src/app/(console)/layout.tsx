@@ -32,17 +32,19 @@ export default async function ConsoleLayout({
     cookieStore.get("timmbr_sidebar_collapsed")?.value === "true";
 
   return (
-    <div className="min-h-screen flex bg-grey-50">
+    <div className="h-screen w-full flex overflow-hidden bg-grey-50">
       {/* Enterprise SideBarNavigation Shell */}
-      <ConsoleSidebar
-        initialActivePath={activePath}
-        defaultCollapsed={isCollapsed}
-        user={userProfile}
-      />
+      <aside className="shrink-0 h-screen sticky top-0 z-30">
+        <ConsoleSidebar
+          initialActivePath={activePath}
+          defaultCollapsed={isCollapsed}
+          user={userProfile}
+        />
+      </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-grey-200 bg-white flex items-center justify-between px-8 shrink-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <header className="h-16 border-b border-grey-200 bg-white flex items-center justify-between px-8 shrink-0 z-20">
           <div className="text-sm font-semibold text-grey-900 tracking-tight">
             {strings.header.administration}
           </div>
@@ -54,7 +56,7 @@ export default async function ConsoleLayout({
           </Link>
         </header>
 
-        <main className="flex-1 p-8 overflow-auto">
+        <main className="flex-1 p-8 overflow-y-auto">
           <Container maxWidth="2xl" padded={false}>
             {children}
           </Container>

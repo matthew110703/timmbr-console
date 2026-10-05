@@ -1,7 +1,22 @@
 @import "tailwindcss";
 @import "@timmbr/theme/theme.css";
 
+@source "../";
 @source "../../node_modules/@timmbr/ui";
+
+.category-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .category-detail-layout {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  }
+}
 
 :root {
   color-scheme: light;

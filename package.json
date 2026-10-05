@@ -11,6 +11,7 @@
     "ds:link": "node scripts/ds-link.mjs link",
     "ds:unlink": "node scripts/ds-link.mjs unlink",
     "ds:status": "node scripts/ds-link.mjs status",
+    "ds:check": "node scripts/ds-link.mjs check",
     "commit": "node scripts/commit.mjs",
     "prepare": "husky"
   },

@@ -6,10 +6,11 @@ export const strings = {
   },
   nav: {
     overview: "Overview",
-    orders: "Orders",
+    catalog: "Catalog",
     products: "Products",
-    allProducts: "All Products",
     categories: "Categories",
+    brands: "Brands",
+    orders: "Orders",
     inventory: "Inventory",
     customers: "Customers",
   },

@@ -1,16 +1,26 @@
-export interface ApiResponse<T = unknown> {
-  statusCode: number;
-  message?: string;
-  data: T;
-  timestamp: string;
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
 export interface PaginatedResult<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  data: T[];
+  meta: PaginationMeta;
+}
+
+export interface ApiSuccessResponse<T = unknown> {
+  success: true;
+  statusCode: number;
+  code: string;
+  message: string;
+  data: T;
+  path: string;
+  method: string;
+  timestamp: string;
 }
 
 export interface ApiErrorResponse {

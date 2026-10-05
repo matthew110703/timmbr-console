@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { ACCESS_TOKEN_COOKIE } from "@timmbr/utils";
 import type { ApiErrorResponse } from "@/types/api";
 import { API_ROUTES, API_PREFIX } from "./routes";
 
@@ -198,6 +199,15 @@ export class ApiClient {
       let resolvedToken = token;
       if (!resolvedToken && this.tokenGetter) {
         resolvedToken = (await this.tokenGetter()) || undefined;
+      }
+
+      // Automatically resolve token from server cookies in Next.js Server Components
+      if (!resolvedToken && typeof window === "undefined") {
+        try {
+          const { cookies } = await import("next/headers");
+          const cookieStore = await cookies();
+          resolvedToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
+        } catch {}
       }
 
       if (resolvedToken && !requestHeaders.has("Authorization")) {

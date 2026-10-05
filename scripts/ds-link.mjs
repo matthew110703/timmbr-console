@@ -308,12 +308,93 @@ function handleUnlink(specifiedTargets = []) {
   handleStatus();
 }
 
+function handleCheck() {
+  const timmbrDeps = getConsoleTimmbrDeps();
+  const linkedItems = [];
+
+  for (const dep of timmbrDeps) {
+    const info = getPackageStatus(dep);
+    if (info.status === "yalc" || info.status === "symlink") {
+      linkedItems.push({
+        pkg: dep,
+        details: info.details,
+      });
+    }
+  }
+
+  // Check if .yalc directory or yalc.lock exists
+  const yalcDir = path.resolve(ROOT_DIR, ".yalc");
+  const yalcLock = path.resolve(ROOT_DIR, "yalc.lock");
+  if (fs.existsSync(yalcDir) || fs.existsSync(yalcLock)) {
+    if (linkedItems.length === 0) {
+      linkedItems.push({
+        pkg: "local .yalc artifacts",
+        details: "found .yalc or yalc.lock",
+      });
+    }
+  }
+
+  // Check package.json for file:.yalc
+  const pkgJsonPath = path.resolve(ROOT_DIR, "package.json");
+  if (fs.existsSync(pkgJsonPath)) {
+    try {
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+      const allDeps = {
+        ...pkgJson.dependencies,
+        ...pkgJson.devDependencies,
+      };
+      for (const [dep, val] of Object.entries(allDeps)) {
+        if (
+          dep.startsWith("@timmbr/") &&
+          typeof val === "string" &&
+          val.startsWith("file:.yalc")
+        ) {
+          const already = linkedItems.some((i) => i.pkg === dep);
+          if (!already) {
+            linkedItems.push({
+              pkg: dep,
+              details: val,
+            });
+          }
+        }
+      }
+    } catch {}
+  }
+
+  if (linkedItems.length > 0) {
+    console.error(
+      "\n\x1b[31m=============================================================",
+    );
+    console.error(
+      "  ✖ [PRE-COMMIT BLOCKED] LOCAL YALC DESIGN SYSTEM LINKS FOUND",
+    );
+    console.error(
+      "=============================================================\x1b[0m\n",
+    );
+    console.error("Local Yalc links were detected in timmbr-console:\n");
+    for (const item of linkedItems) {
+      console.error(`  - \x1b[31m${item.pkg}\x1b[0m (${item.details})`);
+    }
+    console.error(
+      "\n\x1b[36mLocal Yalc links must not be committed to source control.\x1b[0m",
+    );
+    console.error(
+      "Please run \x1b[32mpnpm ds:unlink\x1b[0m to restore registry versions before committing.\n",
+    );
+    process.exit(1);
+  }
+
+  console.log(
+    "\x1b[32m✔ [ds:check] Clean: No local Yalc design system links detected in timmbr-console.\x1b[0m",
+  );
+}
+
 // Argument parsing: supports "pnpm ds:link ui motion", "node scripts/ds-link.mjs ui motion", "pnpm ds:unlink ui", etc.
 const firstArg = process.argv[2] || "status";
 let action = "status";
 let rawTargets = [];
 
-if (["link", "unlink", "status"].includes(firstArg)) {
+if (["link", "unlink", "status", "check"].includes(firstArg)) {
   action = firstArg;
   rawTargets = process.argv.slice(3);
 } else {
@@ -327,14 +408,17 @@ const specifiedTargets = rawTargets
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);
 
-const dsPackages = findDSPackages();
-
 switch (action) {
-  case "link":
+  case "link": {
+    const dsPackages = findDSPackages();
     handleLink(dsPackages, specifiedTargets);
     break;
+  }
   case "unlink":
     handleUnlink(specifiedTargets);
+    break;
+  case "check":
+    handleCheck();
     break;
   case "status":
   default:
