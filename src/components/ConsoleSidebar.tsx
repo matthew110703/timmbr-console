@@ -10,6 +10,7 @@ import {
   Package,
   Tags,
   Award,
+  SlidersHorizontal,
   User,
   LogOut,
 } from "lucide-react";
@@ -85,6 +86,11 @@ export function ConsoleSidebar({
             href: "/brands",
             icon: <Award className="size-4" />,
           },
+          {
+            label: strings.nav.attributes,
+            href: "/attributes",
+            icon: <SlidersHorizontal className="size-4" />,
+          },
         ],
       },
     ],
@@ -151,6 +157,7 @@ export function ConsoleSidebar({
         branding={brandingConfig}
         profile={profileConfig}
         linkComponent={Link}
+        className="bg-[#FAF7F2] dark:bg-card border-r border-[#E8DFD3] dark:border-border shadow-xs"
       />
 
       <ProfileDialog

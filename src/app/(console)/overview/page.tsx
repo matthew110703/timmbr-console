@@ -12,7 +12,7 @@ export default function DashboardPage() {
       <Stack gap={1}>
         <Heading
           level={1}
-          className="text-2xl font-bold tracking-tight text-grey-900 font-sans"
+          className="text-2xl font-bold tracking-tight text-foreground font-sans"
         >
           {strings.title}
         </Heading>
@@ -20,7 +20,7 @@ export default function DashboardPage() {
           {strings.subtitle}
         </Text>
       </Stack>
-      <Center className="h-64 border border-dashed border-grey-300 rounded-lg">
+      <Center className="h-64 border border-dashed border-border rounded-lg">
         <Text variant="body-2" foreground="muted">
           {strings.placeholder}
         </Text>

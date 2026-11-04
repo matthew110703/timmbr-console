@@ -20,6 +20,32 @@ const YALC_EXEC = fs.existsSync(localYalcCmd)
   ? `"${localYalcCmd}"`
   : "pnpm exec yalc";
 
+const CANONICAL_VERSIONS = {
+  "@timmbr/ui": "1.13.2",
+  "@timmbr/motion": "1.2.5",
+  "@timmbr/theme": "1.3.0",
+  "@timmbr/icons": "1.6.0",
+  "@timmbr/hooks": "1.2.0",
+  "@timmbr/utils": "1.6.0",
+};
+
+function getCanonicalVersion(dep) {
+  const rootPkgPath = path.resolve(ROOT_DIR, "package.json");
+  if (fs.existsSync(rootPkgPath)) {
+    try {
+      const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, "utf8"));
+      const allRootDeps = {
+        ...rootPkg.dependencies,
+        ...rootPkg.devDependencies,
+      };
+      if (allRootDeps[dep] && !allRootDeps[dep].startsWith("file:")) {
+        return allRootDeps[dep];
+      }
+    } catch {}
+  }
+  return CANONICAL_VERSIONS[dep] || "latest";
+}
+
 function findDSPackages() {
   const packagesDir = path.resolve(DS_PATH, "packages");
   if (!fs.existsSync(packagesDir)) {
@@ -69,7 +95,30 @@ function getConsoleTimmbrDeps() {
 }
 
 function getPackageStatus(pkgName) {
+  const pkgJsonPath = path.resolve(ROOT_DIR, "package.json");
+  let declaredVersion = "";
+  if (fs.existsSync(pkgJsonPath)) {
+    try {
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+      declaredVersion =
+        pkgJson.dependencies?.[pkgName] ||
+        pkgJson.devDependencies?.[pkgName] ||
+        "";
+    } catch {}
+  }
+
   const yalcPkgPath = path.resolve(ROOT_DIR, ".yalc", ...pkgName.split("/"));
+  if (declaredVersion.startsWith("file:.yalc")) {
+    if (fs.existsSync(yalcPkgPath)) {
+      return { status: "yalc", details: "Yalc Local Link (.yalc/)" };
+    }
+    return {
+      status: "stale",
+      details:
+        "Stale link (package.json has file:.yalc but .yalc/ dir missing)",
+    };
+  }
+
   if (fs.existsSync(yalcPkgPath)) {
     return { status: "yalc", details: "Yalc Local Link (.yalc/)" };
   }
@@ -88,10 +137,10 @@ function getPackageStatus(pkgName) {
     if (realPath.includes("timmbr-ds")) {
       return { status: "symlink", details: `Symlink (${realPath})` };
     }
-    const pkgJsonPath = path.resolve(nodeModulesPath, "package.json");
+    const innerPkgJsonPath = path.resolve(nodeModulesPath, "package.json");
     let version = "";
-    if (fs.existsSync(pkgJsonPath)) {
-      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+    if (fs.existsSync(innerPkgJsonPath)) {
+      const pkg = JSON.parse(fs.readFileSync(innerPkgJsonPath, "utf8"));
       version = pkg.version ? `v${pkg.version}` : "";
     }
     return { status: "registry", details: `Registry (${version || "npm"})` };
@@ -123,6 +172,10 @@ function handleStatus() {
       );
     } else if (info.status === "symlink") {
       console.log(`  \x1b[33m🔗 ${dep.padEnd(20)}\x1b[0m -> ${info.details}`);
+    } else if (info.status === "stale") {
+      console.log(
+        `  \x1b[31m⚠️  ${dep.padEnd(20)}\x1b[0m -> \x1b[31m${info.details}\x1b[0m`,
+      );
     } else {
       console.log(`  \x1b[31m⚠️  ${dep.padEnd(20)}\x1b[0m -> ${info.details}`);
     }
@@ -144,9 +197,15 @@ function matchesTarget(pkgName, shortName, targets) {
     shortName || lowerPkg.replace("@timmbr/", "")
   ).toLowerCase();
   return targets.some((target) => {
-    const norm = normalizePackageName(target);
+    const raw = target.trim().toLowerCase();
+    const norm = normalizePackageName(raw);
     const short = norm.replace("@timmbr/", "");
-    return lowerPkg === norm || lowerShort === short;
+    return (
+      lowerPkg === norm ||
+      lowerPkg === raw ||
+      lowerShort === short ||
+      lowerShort === raw
+    );
   });
 }
 
@@ -173,14 +232,14 @@ function handleLink(dsPackages, specifiedTargets = []) {
     `\n\x1b[36m[Yalc] Publishing packages from: ${DS_PATH}...\x1b[0m\n`,
   );
 
-  // 1. Publish matching packages in timmbr-ds to local yalc store
+  // 1. Publish matching packages in timmbr-ds to local yalc store with --push
   for (const pkg of packagesToPublish) {
     try {
-      execSync(`${YALC_EXEC} publish`, {
+      execSync(`${YALC_EXEC} publish --push`, {
         cwd: pkg.dir,
         stdio: "pipe",
       });
-      console.log(`  ✔ Published ${pkg.name} to yalc store`);
+      console.log(`  ✔ Published ${pkg.name} to yalc store (with --push)`);
     } catch (err) {
       console.warn(`  ⚠️ Could not publish ${pkg.name}: ${err.message}`);
     }
@@ -254,6 +313,44 @@ function handleUnlink(specifiedTargets = []) {
       });
     } catch {}
 
+    // Clean up package folders in .yalc if leftover
+    for (const dep of packagesToUnlink) {
+      const depYalcDir = path.resolve(ROOT_DIR, ".yalc", ...dep.split("/"));
+      if (fs.existsSync(depYalcDir)) {
+        fs.rmSync(depYalcDir, { recursive: true, force: true });
+      }
+    }
+
+    // Restore fallback canonical version in package.json
+    const pkgJsonPath = path.resolve(ROOT_DIR, "package.json");
+    if (fs.existsSync(pkgJsonPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+      let modified = false;
+      for (const dep of packagesToUnlink) {
+        if (
+          pkg.dependencies?.[dep] &&
+          pkg.dependencies[dep].startsWith("file:.yalc")
+        ) {
+          pkg.dependencies[dep] = getCanonicalVersion(dep);
+          modified = true;
+        }
+        if (
+          pkg.devDependencies?.[dep] &&
+          pkg.devDependencies[dep].startsWith("file:.yalc")
+        ) {
+          pkg.devDependencies[dep] = getCanonicalVersion(dep);
+          modified = true;
+        }
+      }
+      if (modified) {
+        fs.writeFileSync(
+          pkgJsonPath,
+          JSON.stringify(pkg, null, 2) + "\n",
+          "utf8",
+        );
+      }
+    }
+
     // Check if any yalc packages remain in package.json
     const remainingYalc = getConsoleTimmbrDeps().some(
       (dep) => getPackageStatus(dep).status === "yalc",
@@ -270,7 +367,7 @@ function handleUnlink(specifiedTargets = []) {
     }
 
     console.log(
-      "\x1b[36mRestoring registry packages via pnpm install...\x1b[0m",
+      "\n\x1b[36mRestoring registry packages via pnpm install...\x1b[0m",
     );
     execSync("pnpm install", { cwd: ROOT_DIR, stdio: "inherit" });
 
@@ -287,7 +384,36 @@ function handleUnlink(specifiedTargets = []) {
       });
     } catch {}
 
-    // Remove .yalc and yalc.lock if present
+    // Ensure fallback versions are restored in package.json
+    const pkgJsonPath = path.resolve(ROOT_DIR, "package.json");
+    if (fs.existsSync(pkgJsonPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+      let modified = false;
+      for (const dep of consoleDeps) {
+        if (
+          pkg.dependencies?.[dep] &&
+          pkg.dependencies[dep].startsWith("file:.yalc")
+        ) {
+          pkg.dependencies[dep] = getCanonicalVersion(dep);
+          modified = true;
+        }
+        if (
+          pkg.devDependencies?.[dep] &&
+          pkg.devDependencies[dep].startsWith("file:.yalc")
+        ) {
+          pkg.devDependencies[dep] = getCanonicalVersion(dep);
+          modified = true;
+        }
+      }
+      if (modified) {
+        fs.writeFileSync(
+          pkgJsonPath,
+          JSON.stringify(pkg, null, 2) + "\n",
+          "utf8",
+        );
+      }
+    }
+
     const yalcDir = path.resolve(ROOT_DIR, ".yalc");
     if (fs.existsSync(yalcDir)) {
       fs.rmSync(yalcDir, { recursive: true, force: true });
@@ -298,7 +424,7 @@ function handleUnlink(specifiedTargets = []) {
     }
 
     console.log(
-      "\x1b[36mRestoring registry packages via pnpm install...\x1b[0m",
+      "\n\x1b[36mRestoring registry packages via pnpm install...\x1b[0m",
     );
     execSync("pnpm install", { cwd: ROOT_DIR, stdio: "inherit" });
 
@@ -314,7 +440,11 @@ function handleCheck() {
 
   for (const dep of timmbrDeps) {
     const info = getPackageStatus(dep);
-    if (info.status === "yalc" || info.status === "symlink") {
+    if (
+      info.status === "yalc" ||
+      info.status === "symlink" ||
+      info.status === "stale"
+    ) {
       linkedItems.push({
         pkg: dep,
         details: info.details,
@@ -389,17 +519,45 @@ function handleCheck() {
   );
 }
 
+function printHelp() {
+  console.log(`
+TIMMBR CONSOLE DESIGN SYSTEM LINKER (Yalc)
+
+Usage:
+  pnpm ds:link [packages...]
+  pnpm ds:unlink [packages...]
+  pnpm ds:status
+  pnpm ds:check
+
+Examples:
+  pnpm ds:link ui            # Link only @timmbr/ui into timmbr-console
+  pnpm ds:link ui motion     # Link @timmbr/ui and @timmbr/motion
+  pnpm ds:link               # Link all @timmbr packages
+  pnpm ds:unlink ui          # Unlink @timmbr/ui and restore registry version
+  pnpm ds:unlink             # Unlink all @timmbr packages
+  pnpm ds:status             # Check current link status
+  pnpm ds:check              # Pre-commit verification for local Yalc links
+`);
+}
+
 // Argument parsing: supports "pnpm ds:link ui motion", "node scripts/ds-link.mjs ui motion", "pnpm ds:unlink ui", etc.
-const firstArg = process.argv[2] || "status";
+const args = process.argv.slice(2);
+
+if (args.includes("--help") || args.includes("-h")) {
+  printHelp();
+  process.exit(0);
+}
+
+const firstArg = args[0] || "status";
 let action = "status";
 let rawTargets = [];
 
 if (["link", "unlink", "status", "check"].includes(firstArg)) {
   action = firstArg;
-  rawTargets = process.argv.slice(3);
+  rawTargets = args.slice(1);
 } else {
   action = "link";
-  rawTargets = process.argv.slice(2);
+  rawTargets = args;
 }
 
 const specifiedTargets = rawTargets

@@ -41,7 +41,7 @@ export const CategoryCardSkeleton: React.FC = () => {
         </Stack>
 
         {/* ── Footer Skeleton ── */}
-        <CardFooter className="pt-3 mt-1 border-t border-grey-100">
+        <CardFooter className="pt-3 mt-1 border-t border-border">
           <Inline justify="between" align="center" className="w-full">
             <Inline gap={2} align="center">
               <Skeleton variant="text" className="h-3.5 w-20" />

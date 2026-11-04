@@ -32,9 +32,9 @@ export default async function ConsoleLayout({
     cookieStore.get("timmbr_sidebar_collapsed")?.value === "true";
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-grey-50">
+    <div className="h-full w-full flex overflow-hidden bg-[var(--color-bg-2)]">
       {/* Enterprise SideBarNavigation Shell */}
-      <aside className="shrink-0 h-screen sticky top-0 z-30">
+      <aside className="shrink-0 h-full z-30">
         <ConsoleSidebar
           initialActivePath={activePath}
           defaultCollapsed={isCollapsed}
@@ -43,21 +43,25 @@ export default async function ConsoleLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="h-16 border-b border-grey-200 bg-white flex items-center justify-between px-8 shrink-0 z-20">
-          <div className="text-sm font-semibold text-grey-900 tracking-tight">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        <header className="h-16 border-b border-[#E8DFD3] dark:border-border bg-[#FAF7F2]/90 dark:bg-card/90 backdrop-blur-md flex items-center justify-between px-8 shrink-0 z-20">
+          <div className="text-sm font-semibold text-foreground tracking-tight">
             {strings.header.administration}
           </div>
           <Link
             href="/login"
-            className="text-xs font-medium text-grey-500 hover:text-grey-900 transition-colors"
+            className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             {strings.header.logout}
           </Link>
         </header>
 
-        <main className="flex-1 p-8 overflow-y-auto">
-          <Container maxWidth="2xl" padded={false}>
+        <main className="flex-1 min-h-0 p-5 md:p-6 overflow-hidden flex flex-col">
+          <Container
+            maxWidth="2xl"
+            padded={false}
+            className="flex-1 min-h-0 flex flex-col h-full w-full"
+          >
             {children}
           </Container>
         </main>

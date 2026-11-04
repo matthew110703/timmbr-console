@@ -303,6 +303,9 @@ export class ApiClient {
         "data" in json &&
         json.success === true
       ) {
+        if ("meta" in json) {
+          return { data: json.data, meta: json.meta } as T;
+        }
         return json.data as T;
       }
       return json as T;
@@ -344,7 +347,7 @@ export class ApiClient {
 
   public delete<T = unknown>(
     endpoint: string,
-    options?: Omit<RequestOptions, "body">,
+    options?: RequestOptions,
   ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }

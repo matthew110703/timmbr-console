@@ -32,15 +32,15 @@ export default function CategoryDetailLoading() {
       <div className="category-detail-layout">
         {/* Left Column Skeleton */}
         <div className="w-full min-w-0">
-          <Card variant="outline" className="border-grey-200/80 bg-white">
-            <CardHeader className="border-b border-grey-100 pb-4">
+          <Card variant="outline" className="border-border/80">
+            <CardHeader className="border-b border-border pb-4">
               <Inline justify="between" align="center">
                 <Skeleton className="h-5 w-40 rounded-md" />
                 <Skeleton className="h-5 w-24 rounded-md" />
               </Inline>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-grey-50">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-card">
                 <Skeleton className="size-20 rounded-xl" />
                 <Stack gap={2} className="flex-1">
                   <Skeleton className="h-6 w-48 rounded-md" />
@@ -57,8 +57,8 @@ export default function CategoryDetailLoading() {
 
         {/* Right Column Hierarchy Skeleton */}
         <div className="w-full lg:flex-1 min-w-0">
-          <Card variant="outline" className="border-grey-200/80 bg-white">
-            <CardHeader className="border-b border-grey-100 pb-4">
+          <Card variant="outline" className="border-border/80">
+            <CardHeader className="border-b border-border pb-4">
               <Skeleton className="h-5 w-48 rounded-md" />
             </CardHeader>
             <CardContent className="p-5 space-y-4">

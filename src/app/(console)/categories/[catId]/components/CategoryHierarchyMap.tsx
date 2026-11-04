@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@timmbr/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@timmbr/ui";
 import type { Category, CategoryWithParent } from "../../types";
+import { strings } from "../../strings";
 
 export interface CategoryHierarchyMapProps {
   category: CategoryWithParent;
@@ -31,16 +32,16 @@ const TreeItem: React.FC<{
         <>
           {/* Vertical branch from above to node center */}
           <span
-            className="absolute left-0 top-0 w-px bg-slate-300/80 pointer-events-none"
+            className="absolute left-0 top-0 w-px bg-border pointer-events-none"
             style={{ height: "16px" }}
           />
           {/* Vertical continuation to next sibling */}
           {!isLast && (
-            <span className="absolute left-0 top-[16px] bottom-0 w-px bg-slate-300/80 pointer-events-none" />
+            <span className="absolute left-0 top-[16px] bottom-0 w-px bg-border pointer-events-none" />
           )}
           {/* Horizontal elbow to node text */}
           <span
-            className="absolute left-0 top-[16px] h-px bg-slate-300/80 pointer-events-none"
+            className="absolute left-0 top-[16px] h-px bg-border pointer-events-none"
             style={{ width: "16px" }}
           />
         </>
@@ -54,7 +55,7 @@ const TreeItem: React.FC<{
             "text-sm tracking-tight transition-colors truncate",
             node.isCurrent
               ? "font-semibold text-primary underline underline-offset-4"
-              : "text-slate-800 hover:text-primary hover:underline",
+              : "text-foreground hover:text-primary hover:underline",
           )}
         >
           {node.name}
@@ -125,11 +126,11 @@ export const CategoryHierarchyMap: React.FC<CategoryHierarchyMapProps> = ({
   return (
     <Card
       variant="outline"
-      className="border-grey-200/80 shadow-xs overflow-hidden flex flex-col h-full bg-white"
+      className="border-border/80 shadow-xs overflow-hidden flex flex-col h-full"
     >
-      <CardHeader className="border-b border-grey-100 bg-grey-50/50 py-3.5 px-5">
+      <CardHeader className="border-b border-border bg-card/50 py-3.5 px-5">
         <CardTitle className="text-sm font-semibold font-sans text-foreground">
-          Category Map
+          {strings.detail.hierarchy.title}
         </CardTitle>
       </CardHeader>
 
@@ -139,7 +140,9 @@ export const CategoryHierarchyMap: React.FC<CategoryHierarchyMapProps> = ({
             <TreeItem node={treeRoot} isLast={true} isRoot={true} />
           </div>
         ) : (
-          <p className="text-xs text-muted italic">No hierarchy available.</p>
+          <p className="text-xs text-muted-foreground italic">
+            {strings.detail.hierarchy.noSubcategories}
+          </p>
         )}
       </CardContent>
     </Card>

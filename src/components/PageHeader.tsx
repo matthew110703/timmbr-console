@@ -33,7 +33,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <Inline justify="between" align="center" gap={4} wrap className="w-full">
         <Stack gap={1} className="min-w-0 flex-1">
           {breadcrumbs && (
-            <div className="text-xs text-muted mb-0.5">{breadcrumbs}</div>
+            <div className="text-xs text-muted-foreground mb-0.5">
+              {breadcrumbs}
+            </div>
           )}
           <Inline gap={3} align="center" className="min-w-0 flex-wrap">
             <Heading

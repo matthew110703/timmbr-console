@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,10 +17,11 @@ import {
   Button,
   Stack,
   Alert,
-  ImageUpload,
   Inline,
+  ImageUpload,
 } from "@timmbr/ui";
 import { mediaApi } from "@/lib/api";
+import { generateSlug } from "@/lib/utils/slug";
 import { categoryApi } from "../api";
 import { revalidateCategories } from "../actions";
 import type { Category } from "../types";
@@ -34,7 +35,6 @@ export interface NewCategoryDialogProps {
 
 interface FormState {
   name: string;
-  slug: string;
   description: string;
   parentId: string | null;
   logoUrl: string | null;
@@ -43,7 +43,6 @@ interface FormState {
 
 interface FormErrors {
   name?: string;
-  slug?: string;
   description?: string;
   logoUrl?: string;
   general?: string;
@@ -51,21 +50,11 @@ interface FormErrors {
 
 const INITIAL_FORM_STATE: FormState = {
   name: "",
-  slug: "",
   description: "",
   parentId: null,
   logoUrl: null,
   isActive: true,
 };
-
-function generateSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
   open,
@@ -77,64 +66,40 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
   const [uploadedKey, setUploadedKey] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+
+  const parentCategoryOptions = [
+    { value: "none", label: "None (Root Category)" },
+    ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
+  ];
 
   const resetForm = () => {
     setForm(INITIAL_FORM_STATE);
     setUploadedKey(null);
     setErrors({});
-    setIsSlugManuallyEdited(false);
     setIsSubmitting(false);
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) {
-      resetForm();
-    }
+    if (!nextOpen) resetForm();
     onOpenChange(nextOpen);
   };
 
-  // Parent Category options
-  const parentCategoryOptions = useMemo(() => {
-    const rootOptions = [{ value: "none", label: "None (Root Category)" }];
-    const categoryOptions = categories.map((cat) => ({
-      value: cat.id,
-      label: cat.name,
-    }));
-    return [...rootOptions, ...categoryOptions];
-  }, [categories]);
-
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setForm((prev) => ({
-      ...prev,
-      name: newName,
-      slug: isSlugManuallyEdited ? prev.slug : generateSlug(newName),
-    }));
-    if (errors.name) {
+    setForm((prev) => ({ ...prev, name: e.target.value }));
+    if (errors.name)
       setErrors((prev) => ({ ...prev, name: undefined, general: undefined }));
-    }
-  };
-
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsSlugManuallyEdited(true);
-    setForm((prev) => ({ ...prev, slug: e.target.value.toLowerCase() }));
-    if (errors.slug) {
-      setErrors((prev) => ({ ...prev, slug: undefined, general: undefined }));
-    }
   };
 
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
     setForm((prev) => ({ ...prev, description: e.target.value }));
-    if (errors.description) {
+    if (errors.description)
       setErrors((prev) => ({
         ...prev,
         description: undefined,
         general: undefined,
       }));
-    }
   };
 
   const handleImageUpload = async (file: File) => {
@@ -165,14 +130,6 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
       newErrors.name = "Name must be at least 2 characters";
     } else if (form.name.trim().length > 50) {
       newErrors.name = "Name cannot exceed 50 characters";
-    }
-
-    if (form.slug.trim()) {
-      const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-      if (!slugRegex.test(form.slug.trim())) {
-        newErrors.slug =
-          "Slug must only contain lowercase alphanumeric characters and single hyphens";
-      }
     }
 
     if (form.description.trim()) {
@@ -219,6 +176,8 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
     }
   };
 
+  const slugPreview = form.name.trim() ? `/${generateSlug(form.name)}` : null;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl sm:max-w-3xl">
@@ -226,7 +185,7 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
           <DialogTitle className="text-xl font-bold font-sans">
             Create New Category
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted">
+          <DialogDescription className="text-sm text-muted-foreground">
             Add a new product category or subcategory to your taxonomic catalog.
           </DialogDescription>
         </DialogHeader>
@@ -236,7 +195,6 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
           className="flex flex-col flex-1 min-h-0 overflow-hidden"
         >
           <DialogBody className="space-y-5">
-            {/* General API Error Alert */}
             {errors.general && (
               <Alert variant="destructive" title="Creation Failed">
                 {errors.general}
@@ -244,12 +202,15 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
             )}
 
             <Stack gap={4}>
-              {/* Category Name */}
               <FormField
                 label="Category Name"
                 required
                 error={errors.name}
-                helperText="The customer-facing name of the category (e.g., Living Room, Bedroom)."
+                helperText={
+                  slugPreview
+                    ? `URL slug will be generated as: ${slugPreview}`
+                    : "The customer-facing name of the category (e.g., Living Room, Bedroom)."
+                }
               >
                 <Input
                   placeholder="e.g. Living Room Furniture"
@@ -261,22 +222,6 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
                 />
               </FormField>
 
-              {/* Slug */}
-              <FormField
-                label="URL Slug"
-                error={errors.slug}
-                helperText="The unique URL path for this category. Auto-generated from name."
-              >
-                <Input
-                  placeholder="e.g. living-room-furniture"
-                  value={form.slug}
-                  onChange={handleSlugChange}
-                  disabled={isSubmitting}
-                  error={errors.slug}
-                />
-              </FormField>
-
-              {/* Parent Category */}
               <FormField
                 label="Parent Category"
                 helperText="Assign a parent category to create a nested subcategory."
@@ -295,7 +240,6 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
                 />
               </FormField>
 
-              {/* Description */}
               <FormField
                 label="Description"
                 error={errors.description}
@@ -311,7 +255,6 @@ export const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
                 />
               </FormField>
 
-              {/* Category Image Upload and Active Status Switch */}
               <Inline className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-1">
                 <ImageUpload
                   label="Category Logo / Image"

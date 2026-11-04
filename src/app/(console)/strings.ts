@@ -10,6 +10,7 @@ export const strings = {
     products: "Products",
     categories: "Categories",
     brands: "Brands",
+    attributes: "Attributes",
     orders: "Orders",
     inventory: "Inventory",
     customers: "Customers",

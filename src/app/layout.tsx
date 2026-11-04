@@ -38,9 +38,9 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       style={{ colorScheme: "light" }}
-      className={`${manrope.variable} ${dmSerif.variable} ${outfit.variable}`}
+      className={`${manrope.variable} ${dmSerif.variable} ${outfit.variable} h-full overflow-hidden`}
     >
-      <body>
+      <body className="h-full overflow-hidden">
         <TimmbrConfigProvider
           config={{
             theme: { mode: "light" },

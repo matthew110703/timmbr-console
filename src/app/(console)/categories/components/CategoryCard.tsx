@@ -33,7 +33,7 @@ function formatDate(isoString: string): string {
 }
 
 function getStatusBadgeProps(status: CategoryStatus): {
-  variant: "success" | "subtle" | "secondary" | "outline";
+  variant: "success" | "subtle" | "outline";
   label: string;
 } {
   switch (status) {
@@ -41,8 +41,6 @@ function getStatusBadgeProps(status: CategoryStatus): {
       return { variant: "success", label: strings.card.status.active };
     case "INACTIVE":
       return { variant: "subtle", label: strings.card.status.inactive };
-    case "DRAFT":
-      return { variant: "secondary", label: strings.card.status.draft };
     case "ARCHIVED":
       return { variant: "outline", label: strings.card.status.archived };
     default:
@@ -73,7 +71,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         data-testid="category-card"
       >
         {/* ── Left: Image / Thumbnail ── */}
-        <div className="w-full sm:w-40 md:w-44 shrink-0 relative bg-stone-100 border-b sm:border-b-0 sm:border-r border-grey-100 overflow-hidden flex items-center justify-center min-h-[140px] sm:min-h-full">
+        <div className="w-full sm:w-40 md:w-44 shrink-0 relative bg-accent/50 border-b sm:border-b-0 sm:border-r border-border overflow-hidden flex items-center justify-center min-h-[140px] sm:min-h-full">
           {category.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -84,7 +82,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             />
           ) : (
             <Center className="h-full w-full p-4 select-none">
-              <Center className="size-12 rounded-xl bg-white border border-grey-200 shadow-xs text-primary transition-transform duration-200 group-hover:scale-110">
+              <Center className="size-12 rounded-xl bg-card border border-border shadow-xs text-primary transition-transform duration-200 group-hover:scale-110">
                 <Tags className="size-6 text-primary" />
               </Center>
             </Center>
@@ -135,10 +133,10 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           </Stack>
 
           {/* Footer: Timestamp & Subcategory */}
-          <CardFooter className="pt-3 mt-1 border-t border-grey-100">
+          <CardFooter className="pt-3 mt-1 border-t border-border">
             <Inline justify="between" align="center" className="w-full">
               <Inline gap={2} align="center">
-                <Calendar className="size-3.5 text-grey-400 shrink-0" />
+                <Calendar className="size-3.5 text-muted-foreground/70 shrink-0" />
                 <Text variant="caption" foreground="muted" className="text-xs">
                   {formattedDate}
                 </Text>
@@ -148,7 +146,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
                 <Badge
                   variant="subtle"
                   size="sm"
-                  className="text-[11px] font-medium text-grey-700 bg-grey-100 border border-grey-200/70 shrink-0"
+                  className="text-[11px] font-medium text-secondary-foreground bg-secondary border border-border/70 shrink-0"
                 >
                   Subcategory
                 </Badge>

@@ -1,4 +1,4 @@
-export type CategoryStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED" | "DRAFT";
+export type CategoryStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
 
 export interface Category {
   id: string;
@@ -22,7 +22,6 @@ export interface GetCategoriesParams {
 
 export interface CreateCategoryInput {
   name: string;
-  slug?: string;
   description?: string;
   parentId?: string | null;
   logoUrl?: string | null;

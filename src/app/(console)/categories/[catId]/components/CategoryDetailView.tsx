@@ -53,7 +53,6 @@ export interface CategoryDetailViewProps {
 
 interface FormState {
   name: string;
-  slug: string;
   description: string;
   parentId: string | null;
   logoUrl: string | null;
@@ -62,7 +61,6 @@ interface FormState {
 
 interface FormErrors {
   name?: string;
-  slug?: string;
   description?: string;
   general?: string;
 }
@@ -80,15 +78,6 @@ function formatDate(isoString: string): string {
   }
 }
 
-function generateSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
   initialCategory,
   allCategories,
@@ -102,7 +91,6 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
   // Form State
   const [form, setForm] = useState<FormState>({
     name: initialCategory.name,
-    slug: initialCategory.slug,
     description: initialCategory.description || "",
     parentId: initialCategory.parentId,
     logoUrl: initialCategory.logoUrl,
@@ -111,7 +99,6 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
   const [uploadedKey, setUploadedKey] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   // Filter out current category from parent candidates to prevent cyclic loops
   const parentCategoryOptions = useMemo(() => {
@@ -136,14 +123,12 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
   const handleStartEditing = () => {
     setForm({
       name: category.name,
-      slug: category.slug,
       description: category.description || "",
       parentId: category.parentId,
       logoUrl: category.logoUrl,
       isActive: category.status === "ACTIVE",
     });
     setErrors({});
-    setIsSlugManuallyEdited(false);
     setIsEditing(true);
   };
 
@@ -153,22 +138,9 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setForm((prev) => ({
-      ...prev,
-      name: newName,
-      slug: isSlugManuallyEdited ? prev.slug : generateSlug(newName),
-    }));
+    setForm((prev) => ({ ...prev, name: e.target.value }));
     if (errors.name) {
       setErrors((prev) => ({ ...prev, name: undefined, general: undefined }));
-    }
-  };
-
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsSlugManuallyEdited(true);
-    setForm((prev) => ({ ...prev, slug: e.target.value.toLowerCase() }));
-    if (errors.slug) {
-      setErrors((prev) => ({ ...prev, slug: undefined, general: undefined }));
     }
   };
 
@@ -215,14 +187,6 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
       newErrors.name = "Name cannot exceed 50 characters";
     }
 
-    if (form.slug.trim()) {
-      const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-      if (!slugRegex.test(form.slug.trim())) {
-        newErrors.slug =
-          "Slug must only contain lowercase alphanumeric characters and single hyphens";
-      }
-    }
-
     if (form.description.trim()) {
       if (form.description.trim().length < 10) {
         newErrors.description =
@@ -246,7 +210,6 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
     try {
       const updated = await categoryApi.updateCategory(category.id, {
         name: form.name.trim(),
-        slug: form.slug.trim() || undefined,
         description: form.description.trim() || null,
         parentId:
           form.parentId === "none" || !form.parentId ? null : form.parentId,
@@ -288,7 +251,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
         breadcrumbs={
           <Link
             href="/categories"
-            className="inline-flex items-center gap-2 text-xs font-medium text-muted hover:text-foreground transition-colors group"
+            className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
           >
             <Icon
               icon={ArrowLeft}
@@ -330,7 +293,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                   onClick={() => setIsDeleteDialogOpen(true)}
                   aria-label={strings.detail.deleteTooltip}
                   title={strings.detail.deleteTooltip}
-                  className="border-grey-300 hover:border-destructive/40 hover:bg-destructive/10 text-destructive transition-colors shrink-0"
+                  className="border-border hover:border-destructive/40 hover:bg-destructive/10 text-destructive transition-colors shrink-0"
                 >
                   <Icon icon={Trash2} size="md" className="text-destructive" />
                 </Button>
@@ -376,15 +339,15 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
             <Stack gap={5}>
               <Card
                 variant="outline"
-                className="border-grey-200/80 shadow-xs overflow-hidden bg-white"
+                className="border-border/80 shadow-xs overflow-hidden"
               >
-                <CardHeader className="border-b border-grey-100 bg-grey-50/50 pb-4">
+                <CardHeader className="border-b border-border bg-card/50 pb-4">
                   <Inline justify="between" align="center">
                     <Stack gap={0.5}>
                       <CardTitle className="text-base font-bold font-sans">
                         {strings.detail.overviewTitle}
                       </CardTitle>
-                      <CardDescription className="text-xs text-muted">
+                      <CardDescription className="text-xs text-muted-foreground">
                         {strings.detail.overviewSubtitle}
                       </CardDescription>
                     </Stack>
@@ -393,8 +356,8 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
 
                 <CardContent className="p-6 space-y-6">
                   {/* Category Image & Identity Banner */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl bg-grey-50/80 border border-grey-200/70">
-                    <div className="size-20 rounded-xl bg-white border border-grey-200 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl bg-card/80 border border-border/70">
+                    <div className="size-20 rounded-xl bg-card border border-border overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
                       {category.logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -425,13 +388,13 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
 
                       {/* Copyable Slug */}
                       <Inline gap={2.5} align="center">
-                        <span className="font-mono text-xs text-grey-700 bg-white px-2 py-0.5 rounded border border-grey-200">
+                        <span className="font-mono text-xs text-foreground/70 bg-card px-2 py-0.5 rounded border border-border">
                           /{category.slug}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleCopy(category.slug, "slug")}
-                          className="text-grey-400 hover:text-foreground text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                          className="text-muted-foreground/70 hover:text-foreground text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                           title="Copy Slug"
                         >
                           <Icon icon={Copy} size="sm" className="size-3" />
@@ -445,7 +408,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                       <Inline
                         gap={2}
                         align="center"
-                        className="text-xs text-muted mt-0.5"
+                        className="text-xs text-muted-foreground mt-0.5"
                       >
                         <Icon
                           icon={Layers}
@@ -473,7 +436,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                   <Stack gap={1.5}>
                     <Text
                       variant="caption"
-                      className="font-semibold text-grey-500 uppercase tracking-wider text-[11px]"
+                      className="font-semibold text-muted-foreground uppercase tracking-wider text-[11px]"
                     >
                       {strings.detail.fields.description}
                     </Text>
@@ -482,7 +445,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                       className="text-sm text-foreground/80 leading-relaxed font-normal"
                     >
                       {category.description || (
-                        <span className="italic text-muted">
+                        <span className="italic text-muted-foreground">
                           {strings.card.noDescription}
                         </span>
                       )}
@@ -490,15 +453,15 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                   </Stack>
 
                   {/* Metadata & Audit Information */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-grey-100">
-                    <div className="p-3 rounded-lg bg-grey-50 border border-grey-100 flex items-center gap-3">
-                      <Center className="size-8 rounded-md bg-white border border-grey-200 text-grey-500 shrink-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+                    <div className="p-3 rounded-lg bg-card border border-border flex items-center gap-3">
+                      <Center className="size-8 rounded-md bg-background border border-border text-muted-foreground shrink-0">
                         <Icon icon={Calendar} size="sm" />
                       </Center>
                       <Stack gap={0} className="min-w-0">
                         <Text
                           variant="caption"
-                          className="text-[11px] text-muted font-medium"
+                          className="text-[11px] text-muted-foreground font-medium"
                         >
                           {strings.detail.fields.createdAt}
                         </Text>
@@ -511,14 +474,14 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                       </Stack>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-grey-50 border border-grey-100 flex items-center gap-3">
-                      <Center className="size-8 rounded-md bg-white border border-grey-200 text-grey-500 shrink-0">
+                    <div className="p-3 rounded-lg bg-card border border-border flex items-center gap-3">
+                      <Center className="size-8 rounded-md bg-background border border-border text-muted-foreground shrink-0">
                         <Icon icon={Clock} size="sm" />
                       </Center>
                       <Stack gap={0} className="min-w-0">
                         <Text
                           variant="caption"
-                          className="text-[11px] text-muted font-medium"
+                          className="text-[11px] text-muted-foreground font-medium"
                         >
                           {strings.detail.fields.updatedAt}
                         </Text>
@@ -536,25 +499,25 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                   <Inline
                     justify="between"
                     align="center"
-                    className="pt-2 text-xs text-muted border-t border-grey-100"
+                    className="pt-2 text-xs text-muted-foreground border-t border-border"
                   >
                     <Inline gap={2} align="center" className="min-w-0">
                       <Icon
                         icon={Hash}
                         size="sm"
-                        className="text-grey-400 size-3 shrink-0"
+                        className="text-muted-foreground/70 size-3 shrink-0"
                       />
-                      <span className="text-[11px] text-muted uppercase font-semibold">
+                      <span className="text-[11px] text-muted-foreground uppercase font-semibold">
                         ID:
                       </span>
-                      <span className="font-mono text-xs text-grey-600 truncate select-all">
+                      <span className="font-mono text-xs text-muted-foreground truncate select-all">
                         {category.id}
                       </span>
                     </Inline>
                     <button
                       type="button"
                       onClick={() => handleCopy(category.id, "id")}
-                      className="text-grey-500 hover:text-foreground text-xs inline-flex items-center gap-1.5 font-medium transition-colors cursor-pointer shrink-0 ml-2"
+                      className="text-muted-foreground hover:text-foreground text-xs inline-flex items-center gap-1.5 font-medium transition-colors cursor-pointer shrink-0 ml-2"
                     >
                       <Icon icon={Copy} size="sm" className="size-3" />
                       <span>{copiedField === "id" ? "Copied" : "Copy ID"}</span>
@@ -567,15 +530,15 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
             /* ── EDIT MODE (FORM) ── */
             <Card
               variant="outline"
-              className="border-primary/40 shadow-sm overflow-hidden bg-white"
+              className="border-primary/40 shadow-sm overflow-hidden"
             >
-              <CardHeader className="border-b border-grey-100 bg-primary/5 pb-4">
+              <CardHeader className="border-b border-border bg-primary/5 pb-4">
                 <Inline justify="between" align="center">
                   <Stack gap={0.5}>
                     <CardTitle className="text-base font-bold font-sans text-primary">
                       Edit Category Details
                     </CardTitle>
-                    <CardDescription className="text-xs text-muted">
+                    <CardDescription className="text-xs text-muted-foreground">
                       Update taxonomic attributes, slug, parent relationship,
                       and image.
                     </CardDescription>
@@ -612,19 +575,14 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                       />
                     </FormField>
 
-                    {/* Slug */}
+                    {/* Slug — read-only, shown for reference */}
                     <FormField
                       label="URL Slug"
-                      error={errors.slug}
-                      helperText="Unique URL identifier for this category."
+                      helperText="Auto-generated by the server. Cannot be changed after creation."
                     >
-                      <Input
-                        placeholder="e.g. living-room-furniture"
-                        value={form.slug}
-                        onChange={handleSlugChange}
-                        disabled={isSubmitting}
-                        error={errors.slug}
-                      />
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-card border border-border text-sm font-mono text-muted-foreground select-all">
+                        /{category.slug}
+                      </div>
                     </FormField>
 
                     {/* Parent Category */}
@@ -690,7 +648,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                   </Stack>
 
                   {/* Form Actions Footer */}
-                  <div className="pt-5 border-t border-grey-100 flex items-center justify-end gap-3">
+                  <div className="pt-5 border-t border-border flex items-center justify-end gap-3">
                     <Button
                       type="button"
                       variant="outline"

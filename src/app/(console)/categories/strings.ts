@@ -18,14 +18,20 @@ export const strings = {
     status: {
       active: "Active",
       inactive: "Inactive",
-      draft: "Draft",
       archived: "Archived",
     },
+  },
+  tabs: {
+    all: "All",
+    active: "Active",
+    inactive: "Inactive",
+    archived: "Archived",
   },
   empty: {
     title: "No categories found",
     description:
       "Start building your taxonomy structure by creating your first category.",
+    filteredDescription: "No categories match the selected status filter.",
     action: "Create First Category",
   },
   error: {
@@ -75,8 +81,12 @@ export const strings = {
       description:
         "Are you sure you want to delete this category? This action cannot be undone.",
       hasChildrenWarning:
-        "Warning: This category has child subcategories. Deleting this category may cascade or fail if children exist.",
+        "This category has nested subcategories. Enabling force delete will permanently remove this category and all its children.",
+      forceDeleteLabel: "Force delete all subcategories",
+      forceDeleteDescription:
+        "I understand this will cascade-delete all child subcategories.",
       confirmButton: "Delete Permanently",
+      confirmButtonForce: "Force Delete",
       cancelButton: "Cancel",
       deleting: "Deleting...",
     },
