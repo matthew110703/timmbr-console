@@ -12,6 +12,7 @@ export const strings = {
     brands: "Brands",
     attributes: "Attributes",
     orders: "Orders",
+    transactions: "Transactions",
     inventory: "Inventory",
     customers: "Customers",
   },

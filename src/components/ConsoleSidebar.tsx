@@ -11,6 +11,8 @@ import {
   Tags,
   Award,
   SlidersHorizontal,
+  ShoppingBag,
+  CreditCard,
   User,
   LogOut,
 } from "lucide-react";
@@ -68,6 +70,11 @@ export function ConsoleSidebar({
         icon: <LayoutDashboard className="size-5" />,
       },
       {
+        label: strings.nav.orders,
+        href: "/orders",
+        icon: <ShoppingBag className="size-5" />,
+      },
+      {
         label: strings.nav.catalog,
         icon: <Layers className="size-5" />,
         items: [
@@ -92,6 +99,11 @@ export function ConsoleSidebar({
             icon: <SlidersHorizontal className="size-4" />,
           },
         ],
+      },
+      {
+        label: strings.nav.transactions,
+        href: "/transactions",
+        icon: <CreditCard className="size-5" />,
       },
     ],
     [],

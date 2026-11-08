@@ -29,6 +29,8 @@ export const API_ROUTES = {
     PRODUCTS: "/admin/products",
     ATTRIBUTE_DEFINITIONS: "/admin/attribute-definitions",
     PRODUCT_STATS: "/admin/products/stats",
+    ORDERS: "/admin/orders",
+    TRANSACTIONS: "/admin/transactions",
   },
   MEDIA: {
     PRESIGNED_URL: "/media/presigned-url",
@@ -65,6 +67,16 @@ export const productAdminRoutes = {
     `${API_ROUTES.ADMIN.PRODUCTS}/${productId}/images`,
   imagePrimary: (productId: string, imageId: string) =>
     `${API_ROUTES.ADMIN.PRODUCTS}/${productId}/images/${imageId}/primary`,
+} as const;
+
+/** Path builders for order admin sub-resources (under ADMIN.ORDERS). */
+export const orderAdminRoutes = {
+  byId: (orderId: string) => `${API_ROUTES.ADMIN.ORDERS}/${orderId}`,
+  activities: (orderId: string) =>
+    `${API_ROUTES.ADMIN.ORDERS}/${orderId}/activities`,
+  acknowledge: (orderId: string) =>
+    `${API_ROUTES.ADMIN.ORDERS}/${orderId}/acknowledge`,
+  status: (orderId: string) => `${API_ROUTES.ADMIN.ORDERS}/${orderId}/status`,
 } as const;
 
 export type ApiRoutes = typeof API_ROUTES;
