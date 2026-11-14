@@ -11,10 +11,13 @@ import {
   Card,
   EmptyState,
   Inline,
+  Tooltip,
   type SortingState,
 } from "@timmbr/ui";
 import { Plus, Search, Package, Trash2, X } from "lucide-react";
 import { PageHeader } from "@/components";
+import { usePermission } from "@/components/AuthContext";
+import { CONSOLE_PERMISSIONS } from "@/lib/auth/permissions";
 import { ProductStatsRow } from "./ProductStatsRow";
 import { DeleteProductDialog } from "./DeleteProductDialog";
 import { strings } from "../strings";
@@ -34,6 +37,8 @@ export const ProductListView: React.FC<ProductListViewProps> = ({
   meta: initialMeta,
 }) => {
   const router = useRouter();
+  const canWrite = usePermission(CONSOLE_PERMISSIONS.CATALOG_WRITE);
+  const canDelete = usePermission(CONSOLE_PERMISSIONS.CATALOG_DELETE);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -63,8 +68,10 @@ export const ProductListView: React.FC<ProductListViewProps> = ({
       createProductColumns({
         onEdit: (product) => router.push(`/products/${product.id}`),
         onDelete: setDeletingProduct,
+        canWrite,
+        canDelete,
       }),
-    [router],
+    [router, canWrite, canDelete],
   );
 
   return (
@@ -74,19 +81,34 @@ export const ProductListView: React.FC<ProductListViewProps> = ({
           title={strings.header.title}
           description={strings.header.subtitle}
           action={
-            <Button
-              variant="default"
-              size="sm"
-              leftIcon={<Plus className="size-4" />}
-              onClick={() => {
-                try {
-                  sessionStorage.removeItem("timmbr_product_draft_id");
-                } catch {}
-                router.push("/products/new");
-              }}
-            >
-              {strings.header.newProduct}
-            </Button>
+            !canWrite ? (
+              <Tooltip content={strings.permissions.createProductRequired}>
+                <span className="inline-flex">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    leftIcon={<Plus className="size-4" />}
+                    disabled
+                  >
+                    {strings.header.newProduct}
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                leftIcon={<Plus className="size-4" />}
+                onClick={() => {
+                  try {
+                    sessionStorage.removeItem("timmbr_product_draft_id");
+                  } catch {}
+                  router.push("/products/new");
+                }}
+              >
+                {strings.header.newProduct}
+              </Button>
+            )
           }
         />
       </div>
@@ -173,17 +195,34 @@ export const ProductListView: React.FC<ProductListViewProps> = ({
             {strings.table.bulkSelected(selectedCount)}
           </span>
           <Inline gap={2} align="center">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => setBulkDeleteOpen(true)}
-              title={strings.toolbar.deleteSelected}
-              aria-label={strings.toolbar.deleteSelected}
-            >
-              <Trash2 className="size-4" />
-            </Button>
+            {!canDelete ? (
+              <Tooltip content={strings.permissions.deleteProductRequired}>
+                <span className="inline-flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    disabled
+                    aria-label={strings.toolbar.deleteSelected}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => setBulkDeleteOpen(true)}
+                title={strings.toolbar.deleteSelected}
+                aria-label={strings.toolbar.deleteSelected}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"

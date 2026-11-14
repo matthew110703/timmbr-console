@@ -89,7 +89,12 @@ export function useOrderList(
         }
 
         const res = await fetch(`/api/orders?${query.toString()}`);
-        if (!res.ok) throw new Error("Failed to load orders");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(
+            errData?.message || errData?.error || "Failed to load orders",
+          );
+        }
         const json = await res.json();
         if (json.data) {
           setOrders(json.data);

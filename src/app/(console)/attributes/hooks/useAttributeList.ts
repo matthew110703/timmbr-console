@@ -66,7 +66,12 @@ export function useAttributeList(
           query.set("type", params.type);
 
         const res = await fetch(`/api/attributes?${query.toString()}`);
-        if (!res.ok) throw new Error("Failed to load attributes");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(
+            errData?.message || errData?.error || "Failed to load attributes",
+          );
+        }
         const json = await res.json();
         if (json.data) {
           setAttributes(json.data);

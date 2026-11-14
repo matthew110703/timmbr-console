@@ -23,6 +23,7 @@ import {
   Center,
   ImageUpload,
   Icon,
+  Tooltip,
 } from "@timmbr/ui";
 import {
   ArrowLeft,
@@ -38,6 +39,8 @@ import {
   Hash,
 } from "lucide-react";
 import { PageHeader } from "@/components";
+import { usePermission } from "@/components/AuthContext";
+import { CONSOLE_PERMISSIONS } from "@/lib/auth/permissions";
 import { mediaApi } from "@/lib/api";
 import { categoryApi } from "../../api";
 import { revalidateCategory } from "../../actions";
@@ -83,6 +86,8 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
   allCategories,
 }) => {
   const router = useRouter();
+  const canWrite = usePermission(CONSOLE_PERMISSIONS.CATALOG_WRITE);
+  const canDelete = usePermission(CONSOLE_PERMISSIONS.CATALOG_DELETE);
   const [category, setCategory] = useState<CategoryWithParent>(initialCategory);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -275,28 +280,71 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
           <Inline gap={3} align="center">
             {!isEditing ? (
               <>
-                <Button
-                  type="button"
-                  variant="default"
-                  size="default"
-                  onClick={handleStartEditing}
-                  className="gap-2.5"
-                  leftIcon={<Icon icon={Pencil} size="sm" />}
-                >
-                  {strings.detail.editCategory}
-                </Button>
+                {!canWrite ? (
+                  <Tooltip content={strings.permissions.editCategoryRequired}>
+                    <span className="inline-flex">
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="default"
+                        disabled
+                        className="gap-2.5"
+                        leftIcon={<Icon icon={Pencil} size="sm" />}
+                      >
+                        {strings.detail.editCategory}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="default"
+                    onClick={handleStartEditing}
+                    className="gap-2.5"
+                    leftIcon={<Icon icon={Pencil} size="sm" />}
+                  >
+                    {strings.detail.editCategory}
+                  </Button>
+                )}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  aria-label={strings.detail.deleteTooltip}
-                  title={strings.detail.deleteTooltip}
-                  className="border-border hover:border-destructive/40 hover:bg-destructive/10 text-destructive transition-colors shrink-0"
-                >
-                  <Icon icon={Trash2} size="md" className="text-destructive" />
-                </Button>
+                {!canDelete ? (
+                  <Tooltip content={strings.permissions.deleteCategoryRequired}>
+                    <span className="inline-flex">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        disabled
+                        aria-label={strings.detail.deleteTooltip}
+                        title={strings.permissions.deleteCategoryRequired}
+                        className="border-border hover:border-destructive/40 hover:bg-destructive/10 text-destructive transition-colors shrink-0"
+                      >
+                        <Icon
+                          icon={Trash2}
+                          size="md"
+                          className="text-destructive"
+                        />
+                      </Button>
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    aria-label={strings.detail.deleteTooltip}
+                    title={strings.detail.deleteTooltip}
+                    className="border-border hover:border-destructive/40 hover:bg-destructive/10 text-destructive transition-colors shrink-0"
+                  >
+                    <Icon
+                      icon={Trash2}
+                      size="md"
+                      className="text-destructive"
+                    />
+                  </Button>
+                )}
               </>
             ) : (
               <>

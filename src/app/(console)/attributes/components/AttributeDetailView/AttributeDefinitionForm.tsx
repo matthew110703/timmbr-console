@@ -3,7 +3,15 @@
 import React from "react";
 import { Controller } from "react-hook-form";
 import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
-import { FormField, Input, Select, Button, Grid, Checkbox } from "@timmbr/ui";
+import {
+  FormField,
+  Input,
+  Select,
+  Button,
+  Grid,
+  Checkbox,
+  Tooltip,
+} from "@timmbr/ui";
 import { strings } from "../../strings";
 import { DISPLAY_OPTIONS } from "../../helpers";
 import type { UpdateAttributeFormValues } from "../../validationSchema";
@@ -16,6 +24,7 @@ interface AttributeDefinitionFormProps {
   isFilterable: boolean;
   canFilter: boolean;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  readOnly?: boolean;
 }
 
 export const AttributeDefinitionForm: React.FC<
@@ -28,6 +37,7 @@ export const AttributeDefinitionForm: React.FC<
   isFilterable,
   canFilter,
   onSubmit,
+  readOnly = false,
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -36,7 +46,7 @@ export const AttributeDefinitionForm: React.FC<
         required
         error={errors.name?.message}
       >
-        <Input {...register("name")} disabled={isSavingDef} />
+        <Input {...register("name")} disabled={isSavingDef || readOnly} />
       </FormField>
 
       <FormField
@@ -46,7 +56,7 @@ export const AttributeDefinitionForm: React.FC<
         <Input
           {...register("unit")}
           placeholder={strings.dialog.unitPlaceholder}
-          disabled={isSavingDef}
+          disabled={isSavingDef || readOnly}
         />
       </FormField>
 
@@ -61,7 +71,7 @@ export const AttributeDefinitionForm: React.FC<
               onCheckedChange={(val) => field.onChange(!!val)}
               label={strings.dialog.isFilterableLabel}
               description={strings.dialog.isFilterableDescription}
-              disabled={isSavingDef || !canFilter}
+              disabled={isSavingDef || !canFilter || readOnly}
             />
           )}
         />
@@ -81,7 +91,7 @@ export const AttributeDefinitionForm: React.FC<
                     options={DISPLAY_OPTIONS}
                     value={field.value}
                     onValueChange={field.onChange}
-                    disabled={isSavingDef}
+                    disabled={isSavingDef || readOnly}
                   />
                 )}
               />
@@ -93,22 +103,32 @@ export const AttributeDefinitionForm: React.FC<
                 type="number"
                 min={0}
                 max={1000}
-                disabled={isSavingDef}
+                disabled={isSavingDef || readOnly}
               />
             </FormField>
           </Grid>
         )}
       </div>
 
-      <Button
-        type="submit"
-        variant="default"
-        size="sm"
-        loading={isSavingDef}
-        loadingText={strings.dialog.saving}
-      >
-        {strings.dialog.save}
-      </Button>
+      {readOnly ? (
+        <Tooltip content={strings.permissions.editAttributeRequired}>
+          <span className="inline-flex">
+            <Button type="button" variant="default" size="sm" disabled>
+              {strings.dialog.save}
+            </Button>
+          </span>
+        </Tooltip>
+      ) : (
+        <Button
+          type="submit"
+          variant="default"
+          size="sm"
+          loading={isSavingDef}
+          loadingText={strings.dialog.saving}
+        >
+          {strings.dialog.save}
+        </Button>
+      )}
     </form>
   );
 };

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { Input, Button, Alert, Stack } from "@timmbr/ui";
+import { Input, Button, Alert, Stack, Text } from "@timmbr/ui";
 import { LogIn } from "lucide-react";
 import { FadeView } from "@timmbr/motion";
 import { authApi } from "@/app/(auth)/api";
@@ -20,6 +20,10 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const [formError, setFormError] = React.useState<string | null>(null);
   const [isErrorDismissed, setIsErrorDismissed] = React.useState(false);
+  const [isSuccessDismissed, setIsSuccessDismissed] = React.useState(false);
+
+  const isInvited = searchParams.get("invited") === "1";
+  const showInviteSuccess = isInvited && !isSuccessDismissed;
 
   const isUnauthorized = searchParams.get("error") === "unauthorized";
   const authError =
@@ -68,6 +72,19 @@ export function LoginForm() {
     <FadeView>
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Stack gap={4}>
+          {showInviteSuccess && (
+            <Alert
+              variant="success"
+              title={strings.alerts.inviteSuccessTitle}
+              dismissible
+              onClose={() => setIsSuccessDismissed(true)}
+            >
+              <Text variant="caption" className="mt-1">
+                {strings.alerts.inviteSuccessDescription}
+              </Text>
+            </Alert>
+          )}
+
           {authError && (
             <Alert
               variant="destructive"

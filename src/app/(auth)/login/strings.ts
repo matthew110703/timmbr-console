@@ -31,4 +31,9 @@ export const strings = {
     unauthorizedAccess:
       "Access denied. Only administrators and master accounts can access the Timmbr Console.",
   },
+  alerts: {
+    inviteSuccessTitle: "Account Activated",
+    inviteSuccessDescription:
+      "Your invitation has been accepted and password set. Please log in with your credentials.",
+  },
 } as const;

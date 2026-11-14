@@ -58,7 +58,12 @@ export function useProductList(
           query.set("status", params.status);
 
         const res = await fetch(`/api/products?${query.toString()}`);
-        if (!res.ok) throw new Error("Failed to load products");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(
+            errData?.message || errData?.error || "Failed to load products",
+          );
+        }
         const json = (await res.json()) as {
           data: Product[];
           meta: PaginationMeta;

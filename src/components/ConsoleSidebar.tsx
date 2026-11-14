@@ -14,12 +14,14 @@ import {
   ShoppingBag,
   CreditCard,
   User,
+  Users,
   LogOut,
 } from "lucide-react";
 import {
   SideBarNavigation,
   toast,
   type NavItem,
+  type NavSubItem,
   type SidebarBrandingConfig,
   type SidebarProfileConfig,
 } from "@timmbr/ui";
@@ -27,6 +29,7 @@ import { ASSETS } from "@/../public";
 import { authApi } from "@/app/(auth)/api/auth";
 import { strings } from "@/app/(console)/strings";
 import type { UserProfile } from "@/types/auth";
+import { hasPermission, CONSOLE_PERMISSIONS } from "@/lib/auth/permissions";
 import { ProfileDialog } from "./ProfileDialog";
 
 interface ConsoleSidebarProps {
@@ -62,52 +65,72 @@ export function ConsoleSidebar({
     }
   }, [isLoggingOut, router]);
 
-  const navItems: NavItem[] = React.useMemo(
-    () => [
+  const navItems: NavItem[] = React.useMemo(() => {
+    const items: NavItem[] = [
       {
         label: strings.nav.overview,
         href: "/overview",
         icon: <LayoutDashboard className="size-5" />,
       },
-      {
+    ];
+
+    if (hasPermission(user, CONSOLE_PERMISSIONS.ORDERS_READ)) {
+      items.push({
         label: strings.nav.orders,
         href: "/orders",
         icon: <ShoppingBag className="size-5" />,
+      });
+    }
+
+    const catalogChildren: NavSubItem[] = [
+      {
+        label: strings.nav.products,
+        href: "/products",
+        icon: <Package className="size-4" />,
       },
       {
+        label: strings.nav.categories,
+        href: "/categories",
+        icon: <Tags className="size-4" />,
+      },
+      {
+        label: strings.nav.brands,
+        href: "/brands",
+        icon: <Award className="size-4" />,
+      },
+      {
+        label: strings.nav.attributes,
+        href: "/attributes",
+        icon: <SlidersHorizontal className="size-4" />,
+      },
+    ].filter(() => hasPermission(user, CONSOLE_PERMISSIONS.CATALOG_READ));
+
+    if (catalogChildren.length > 0) {
+      items.push({
         label: strings.nav.catalog,
         icon: <Layers className="size-5" />,
-        items: [
-          {
-            label: strings.nav.products,
-            href: "/products",
-            icon: <Package className="size-4" />,
-          },
-          {
-            label: strings.nav.categories,
-            href: "/categories",
-            icon: <Tags className="size-4" />,
-          },
-          {
-            label: strings.nav.brands,
-            href: "/brands",
-            icon: <Award className="size-4" />,
-          },
-          {
-            label: strings.nav.attributes,
-            href: "/attributes",
-            icon: <SlidersHorizontal className="size-4" />,
-          },
-        ],
-      },
-      {
+        items: catalogChildren,
+      });
+    }
+
+    if (hasPermission(user, CONSOLE_PERMISSIONS.TRANSACTIONS_READ)) {
+      items.push({
         label: strings.nav.transactions,
         href: "/transactions",
         icon: <CreditCard className="size-5" />,
-      },
-    ],
-    [],
-  );
+      });
+    }
+
+    if (hasPermission(user, CONSOLE_PERMISSIONS.USERS_READ)) {
+      items.push({
+        label: strings.nav.users,
+        href: "/users",
+        icon: <Users className="size-5" />,
+      });
+    }
+
+    return items;
+  }, [user]);
 
   const brandingConfig: SidebarBrandingConfig = React.useMemo(
     () => ({
@@ -145,7 +168,11 @@ export function ConsoleSidebar({
       items: [
         {
           label: strings.profile.viewProfile,
-          onClick: () => setIsProfileOpen(true),
+          onClick: () => {
+            window.setTimeout(() => {
+              setIsProfileOpen(true);
+            }, 80);
+          },
           icon: <User className="size-4" />,
         },
         {

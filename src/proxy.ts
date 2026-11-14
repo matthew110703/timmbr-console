@@ -7,7 +7,7 @@ import {
 import { API_PREFIX, API_ROUTES } from "@/lib/api/routes";
 
 // Public paths that do not require authentication
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/accept-invite"];
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

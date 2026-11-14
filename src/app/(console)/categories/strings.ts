@@ -91,4 +91,9 @@ export const strings = {
       deleting: "Deleting...",
     },
   },
+  permissions: {
+    createCategoryRequired: "You do not have permission to create categories.",
+    editCategoryRequired: "You do not have permission to edit categories.",
+    deleteCategoryRequired: "You do not have permission to delete categories.",
+  },
 } as const;

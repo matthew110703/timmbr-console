@@ -70,4 +70,9 @@ export const strings = {
       deleting: "Deleting...",
     },
   },
+  permissions: {
+    createBrandRequired: "You do not have permission to create brands.",
+    editBrandRequired: "You do not have permission to edit brands.",
+    deleteBrandRequired: "You do not have permission to delete brands.",
+  },
 } as const;

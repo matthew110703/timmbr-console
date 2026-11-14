@@ -13,6 +13,7 @@ export const strings = {
     attributes: "Attributes",
     orders: "Orders",
     transactions: "Transactions",
+    users: "Users",
     inventory: "Inventory",
     customers: "Customers",
   },
@@ -28,8 +29,16 @@ export const strings = {
     dialog: {
       title: "Account Profile",
       description:
-        "Administrative account credentials and system identity details.",
+        "Administrative account credentials, system identity details, and assigned permissions.",
       close: "Close",
+      detailsSection: "Account Details",
+      permissionsSection: "Assigned Permissions",
+      permissionsGrantedSuffix: "granted",
+      masterAccessBadge: "Unconditional Access",
+      masterAccessDescription:
+        "Master accounts hold full system privileges across all console modules and administrative actions.",
+      noPermissionsAssigned:
+        "No granular permissions are currently assigned to this account.",
       fields: {
         id: "Account ID",
         name: "Full Name",
@@ -50,6 +59,12 @@ export const strings = {
   footer: {
     docs: "Documentation",
     support: "Help & Support",
+  },
+  accessDenied: {
+    title: "Access Denied",
+    description:
+      "You do not have permission to view or manage this administrative resource.",
+    backToOverview: "Return to Overview",
   },
 } as const;
 

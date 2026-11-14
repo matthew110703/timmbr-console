@@ -139,6 +139,12 @@ export const strings = {
     noTransitions:
       "No further status transitions are available for this order.",
   },
+  permissions: {
+    updateOrderRequired: "You do not have permission to update orders.",
+    cancelOrderRequired: "You do not have permission to cancel orders.",
+    deliverOrderRequired:
+      "You do not have permission to mark orders as delivered.",
+  },
 } as const;
 
 export type ConsoleOrdersStrings = typeof strings;

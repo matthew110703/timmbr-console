@@ -159,4 +159,9 @@ export const strings = {
     publishConfirmBody:
       "This will set the product status to Active. Ensure variants, pricing, and media are ready.",
   },
+  permissions: {
+    createProductRequired: "You do not have permission to create products.",
+    editProductRequired: "You do not have permission to edit products.",
+    deleteProductRequired: "You do not have permission to delete products.",
+  },
 } as const;

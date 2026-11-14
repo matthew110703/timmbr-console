@@ -15,6 +15,7 @@ import {
   Inline,
   Stack,
   Text,
+  Tooltip,
   toast,
 } from "@timmbr/ui";
 import {
@@ -25,6 +26,8 @@ import {
   Truck,
 } from "lucide-react";
 import { PageHeader } from "@/components";
+import { usePermission } from "@/components/AuthContext";
+import { CONSOLE_PERMISSIONS } from "@/lib/auth/permissions";
 import { orderApi } from "../api";
 import { formatAddressBlock } from "../lib/formatOrderAddress";
 import { formatDateTime, formatMoney } from "../lib/formatMoney";
@@ -88,6 +91,10 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({
   initialOrder,
   initialTimeline,
 }) => {
+  const canUpdate = usePermission(CONSOLE_PERMISSIONS.ORDERS_UPDATE);
+  const canCancel = usePermission(CONSOLE_PERMISSIONS.ORDERS_CANCEL);
+  const canDeliver = usePermission(CONSOLE_PERMISSIONS.ORDERS_DELIVER);
+
   const [order, setOrder] = useState<OrderDetail>(initialOrder);
   const [timeline, setTimeline] = useState<OrderTimeline>(initialTimeline);
   const [statusOpen, setStatusOpen] = useState(false);
@@ -100,10 +107,16 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({
   const latestPayment = order.payments?.[0];
   const paymentStatus = latestPayment?.status ?? null;
 
-  const allowedStatuses = useMemo(
-    () => getAllowedNextStatuses(order.status, { excludeCancelled: true }),
-    [order.status],
-  );
+  const allowedStatuses = useMemo(() => {
+    const raw = getAllowedNextStatuses(order.status, {
+      excludeCancelled: !canCancel,
+    });
+    return raw.filter((status) => {
+      if (status === "CANCELLED" && !canCancel) return false;
+      if (status === "DELIVERED" && !canDeliver) return false;
+      return true;
+    });
+  }, [order.status, canCancel, canDeliver]);
 
   const allowedManufacturing = useMemo(
     () => getManufacturingEventsForStatus(order.status),
@@ -270,31 +283,66 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({
                 {strings.detail.refresh}
               </Button>
               {showAcknowledge ? (
-                <Button
-                  size="sm"
-                  loading={isAcknowledging}
-                  onClick={() => void handleAcknowledge()}
-                >
-                  {strings.detail.acknowledge}
-                </Button>
+                !canUpdate ? (
+                  <Tooltip content={strings.permissions.updateOrderRequired}>
+                    <span className="inline-flex">
+                      <Button size="sm" disabled>
+                        {strings.detail.acknowledge}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    size="sm"
+                    loading={isAcknowledging}
+                    onClick={() => void handleAcknowledge()}
+                  >
+                    {strings.detail.acknowledge}
+                  </Button>
+                )
               ) : null}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setStatusOpen(true)}
-                disabled={allowedStatuses.length === 0}
-              >
-                {strings.detail.updateStatus}
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                leftIcon={<ClipboardList className="size-4" />}
-                onClick={() => setActivityOpen(true)}
-                disabled={allowedManufacturing.length === 0}
-              >
-                {strings.detail.logActivity}
-              </Button>
+              {!canUpdate ? (
+                <Tooltip content={strings.permissions.updateOrderRequired}>
+                  <span className="inline-flex">
+                    <Button variant="outline" size="sm" disabled>
+                      {strings.detail.updateStatus}
+                    </Button>
+                  </span>
+                </Tooltip>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setStatusOpen(true)}
+                  disabled={allowedStatuses.length === 0}
+                >
+                  {strings.detail.updateStatus}
+                </Button>
+              )}
+              {!canUpdate ? (
+                <Tooltip content={strings.permissions.updateOrderRequired}>
+                  <span className="inline-flex">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      leftIcon={<ClipboardList className="size-4" />}
+                      disabled
+                    >
+                      {strings.detail.logActivity}
+                    </Button>
+                  </span>
+                </Tooltip>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  leftIcon={<ClipboardList className="size-4" />}
+                  onClick={() => setActivityOpen(true)}
+                  disabled={allowedManufacturing.length === 0}
+                >
+                  {strings.detail.logActivity}
+                </Button>
+              )}
             </Inline>
           }
         />
@@ -520,6 +568,8 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({
         allowedStatuses={allowedStatuses}
         isSubmitting={isUpdatingStatus}
         onSubmit={handleUpdateStatus}
+        canCancel={canCancel}
+        canDeliver={canDeliver}
       />
 
       <LogActivityDialog

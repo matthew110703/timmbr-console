@@ -2,13 +2,14 @@ import Link from "next/link";
 import { headers, cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Container } from "@timmbr/ui";
-import { ConsoleSidebar } from "@/components";
+import { ConsoleSidebar, AuthProvider, AccessDeniedView } from "@/components";
 import {
   ACCESS_TOKEN_COOKIE,
   isTokenExpired,
   isTokenAuthorized,
 } from "@timmbr/utils";
 import { authApi } from "@/app/(auth)/api";
+import { canAccessRoute } from "@/lib/auth/permissions";
 import { strings } from "./strings";
 
 export default async function ConsoleLayout({
@@ -62,7 +63,13 @@ export default async function ConsoleLayout({
             padded={false}
             className="flex-1 min-h-0 flex flex-col h-full w-full"
           >
-            {children}
+            <AuthProvider user={userProfile}>
+              {userProfile && !canAccessRoute(userProfile, activePath) ? (
+                <AccessDeniedView />
+              ) : (
+                children
+              )}
+            </AuthProvider>
           </Container>
         </main>
       </div>

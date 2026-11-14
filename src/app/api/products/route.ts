@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toBffErrorResponse } from "@/lib/api";
 import { productApi } from "@/app/(console)/products/api";
 import type { ProductStatus } from "@/app/(console)/products/types";
 
@@ -33,8 +34,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(res);
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to fetch products";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return toBffErrorResponse(err, "Failed to fetch products");
   }
 }

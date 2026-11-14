@@ -10,10 +10,13 @@ import {
   Card,
   EmptyState,
   Inline,
+  Tooltip,
   type SortingState,
 } from "@timmbr/ui";
 import { Plus, Search, SlidersHorizontal, X, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components";
+import { usePermission } from "@/components/AuthContext";
+import { CONSOLE_PERMISSIONS } from "@/lib/auth/permissions";
 import { NewAttributeDialog } from "./NewAttributeDialog";
 import { AttributeDetailView } from "./AttributeDetailView";
 import { DeleteAttributeDialog } from "./DeleteAttributeDialog";
@@ -34,6 +37,8 @@ export const AttributeListView: React.FC<AttributeListViewProps> = ({
   initialData,
   meta: initialMeta,
 }) => {
+  const canWrite = usePermission(CONSOLE_PERMISSIONS.CATALOG_WRITE);
+  const canDelete = usePermission(CONSOLE_PERMISSIONS.CATALOG_DELETE);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isNewOpen, setIsNewOpen] = useState(false);
   const [editingAttr, setEditingAttr] = useState<AttributeDefinition | null>(
@@ -71,8 +76,10 @@ export const AttributeListView: React.FC<AttributeListViewProps> = ({
       createAttributeColumns({
         onEdit: setEditingAttr,
         onDelete: setDeletingAttr,
+        canWrite,
+        canDelete,
       }),
-    [],
+    [canWrite, canDelete],
   );
 
   return (
@@ -82,14 +89,29 @@ export const AttributeListView: React.FC<AttributeListViewProps> = ({
           title={strings.header.title}
           description={strings.header.subtitle}
           action={
-            <Button
-              variant="default"
-              size="sm"
-              leftIcon={<Plus className="size-4" />}
-              onClick={() => setIsNewOpen(true)}
-            >
-              {strings.header.newAttribute}
-            </Button>
+            !canWrite ? (
+              <Tooltip content={strings.permissions.createAttributeRequired}>
+                <span className="inline-flex">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    leftIcon={<Plus className="size-4" />}
+                    disabled
+                  >
+                    {strings.header.newAttribute}
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                leftIcon={<Plus className="size-4" />}
+                onClick={() => setIsNewOpen(true)}
+              >
+                {strings.header.newAttribute}
+              </Button>
+            )
           }
         />
       </div>
@@ -186,17 +208,34 @@ export const AttributeListView: React.FC<AttributeListViewProps> = ({
             {strings.toolbar.selectedCount(selectedCount)}
           </span>
           <Inline gap={2} align="center">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => setBulkDeleteOpen(true)}
-              title={strings.toolbar.deleteSelected}
-              aria-label={strings.toolbar.deleteSelected}
-            >
-              <Trash2 className="size-4" />
-            </Button>
+            {!canDelete ? (
+              <Tooltip content={strings.permissions.deleteAttributeRequired}>
+                <span className="inline-flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    disabled
+                    aria-label={strings.toolbar.deleteSelected}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => setBulkDeleteOpen(true)}
+                title={strings.toolbar.deleteSelected}
+                aria-label={strings.toolbar.deleteSelected}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -291,6 +330,7 @@ export const AttributeListView: React.FC<AttributeListViewProps> = ({
         onOpenChange={(open) => !open && setEditingAttr(null)}
         definition={editingAttr}
         onSuccess={handleRefresh}
+        readOnly={!canWrite}
       />
 
       {/* ── Single Delete Confirmation ── */}

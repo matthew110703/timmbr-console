@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   Button,
   Checkbox,
+  Tooltip,
   type ColumnDef,
   type HeaderContext,
   type CellContext,
@@ -14,14 +15,18 @@ import { strings } from "./strings";
 import { ProductStatusBadge } from "./components/ProductStatusBadge";
 import type { Product } from "./types";
 
-interface CreateProductColumnsOptions {
+export interface CreateProductColumnsOptions {
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  canWrite?: boolean;
+  canDelete?: boolean;
 }
 
 export function createProductColumns({
   onEdit,
   onDelete,
+  canWrite = true,
+  canDelete = true,
 }: CreateProductColumnsOptions): ColumnDef<Product>[] {
   return [
     {
@@ -145,27 +150,62 @@ export function createProductColumns({
             className="flex items-center justify-end gap-1"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(product)}
-              aria-label={`Edit ${product.title}`}
-              title={strings.actions.edit}
-            >
-              <Pencil className="size-3.5" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => onDelete(product)}
-              aria-label={`Delete ${product.title}`}
-              title={strings.actions.delete}
-            >
-              <Trash2 className="size-3.5" />
-            </Button>
+            {!canWrite ? (
+              <Tooltip content={strings.permissions.editProductRequired}>
+                <span className="inline-flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled
+                    aria-label={`Edit ${product.title}`}
+                    title={strings.permissions.editProductRequired}
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onEdit(product)}
+                aria-label={`Edit ${product.title}`}
+                title={strings.actions.edit}
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+            )}
+            {!canDelete ? (
+              <Tooltip content={strings.permissions.deleteProductRequired}>
+                <span className="inline-flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label={`Delete ${product.title}`}
+                    title={strings.permissions.deleteProductRequired}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => onDelete(product)}
+                aria-label={`Delete ${product.title}`}
+                title={strings.actions.delete}
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
+            )}
           </div>
         );
       },

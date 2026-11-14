@@ -55,6 +55,7 @@ export const authApi = {
       email: res.email,
       role: role,
       emailVerified: res.emailVerified,
+      permissions: res.permissions ?? [],
     });
 
     return { ...res, role };
@@ -82,7 +83,7 @@ export const authApi = {
 
       const profile = await api.get<UserProfile>(API_ROUTES.USER.ME, {
         token: resolvedToken || undefined,
-        next: { revalidate: 60, tags: ["user-profile"] },
+        cache: "no-store",
       });
 
       if (profile) {
@@ -100,5 +101,22 @@ export const authApi = {
     } catch {
       return null;
     }
+  },
+
+  validateInviteToken: async (token: string): Promise<void> => {
+    await api.get<void>(API_ROUTES.AUTH.VALIDATE_TOKEN, {
+      params: { token, type: "INVITE" },
+      skipAuth: true,
+    });
+  },
+
+  acceptInvite: async (token: string, password: string): Promise<void> => {
+    await api.post<void>(
+      API_ROUTES.AUTH.ACCEPT_INVITE,
+      { token, password },
+      {
+        skipAuth: true,
+      },
+    );
   },
 };

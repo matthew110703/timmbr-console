@@ -1,4 +1,4 @@
-export type UserRole = "USER" | "ADMIN" | "MASTER";
+export type UserRole = "USER" | "STAFF" | "ADMIN" | "MASTER";
 
 export interface User {
   id: string;
@@ -6,6 +6,7 @@ export interface User {
   email: string;
   role: UserRole;
   emailVerified: boolean;
+  permissions?: string[];
 }
 
 export interface UserProfile {
@@ -15,6 +16,7 @@ export interface UserProfile {
   phone: string | null;
   emailVerified: boolean;
   role?: UserRole;
+  permissions?: string[];
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +35,7 @@ export interface LoginResponse {
   email: string;
   role: UserRole;
   emailVerified: boolean;
+  permissions?: string[];
 }
 
 export interface SessionData {

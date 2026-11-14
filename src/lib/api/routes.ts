@@ -18,6 +18,7 @@ export const API_ROUTES = {
     VALIDATE_TOKEN: "/auth/validate-token",
     RESET_PASSWORD: "/auth/reset-password",
     CHANGE_PASSWORD: "/auth/change-password",
+    ACCEPT_INVITE: "/auth/accept-invite",
   },
   USER: {
     ME: "/user/me",
@@ -77,6 +78,14 @@ export const orderAdminRoutes = {
   acknowledge: (orderId: string) =>
     `${API_ROUTES.ADMIN.ORDERS}/${orderId}/acknowledge`,
   status: (orderId: string) => `${API_ROUTES.ADMIN.ORDERS}/${orderId}/status`,
+} as const;
+
+/** Path builders for user admin sub-resources (under ADMIN.USERS). */
+export const userAdminRoutes = {
+  byId: (userId: string) => `${API_ROUTES.ADMIN.USERS}/${userId}`,
+  staff: () => `${API_ROUTES.ADMIN.USERS}/staff`,
+  resendInvite: (userId: string) =>
+    `${API_ROUTES.ADMIN.USERS}/${userId}/resend-invite`,
 } as const;
 
 export type ApiRoutes = typeof API_ROUTES;

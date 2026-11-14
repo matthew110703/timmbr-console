@@ -28,6 +28,7 @@ export interface AttributeDetailViewProps {
   onOpenChange: (open: boolean) => void;
   definition: AttributeDefinition | null;
   onSuccess?: () => void;
+  readOnly?: boolean;
 }
 
 export const AttributeDetailView: React.FC<AttributeDetailViewProps> = ({
@@ -35,6 +36,7 @@ export const AttributeDetailView: React.FC<AttributeDetailViewProps> = ({
   onOpenChange,
   definition,
   onSuccess,
+  readOnly = false,
 }) => {
   const {
     register,
@@ -108,6 +110,7 @@ export const AttributeDetailView: React.FC<AttributeDetailViewProps> = ({
             isFilterable={isFilterable}
             canFilter={canFilter}
             onSubmit={handleSubmit(handleSaveDefinition)}
+            readOnly={readOnly}
           />
 
           {hasOptions && (
@@ -116,6 +119,7 @@ export const AttributeDetailView: React.FC<AttributeDetailViewProps> = ({
               isFilterable={isFilterable}
               displayType={currentDisplayType ?? "CHECKBOX"}
               onSuccess={onSuccess}
+              readOnly={readOnly}
             />
           )}
         </DrawerBody>

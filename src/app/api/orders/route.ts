@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { api, API_ROUTES } from "@/lib/api";
+import { api, API_ROUTES, toBffErrorResponse } from "@/lib/api";
 import type { PaginatedResult } from "@/types/api";
 import type {
   AdminOrder,
@@ -71,8 +71,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(res);
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to fetch orders";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return toBffErrorResponse(err, "Failed to fetch orders");
   }
 }

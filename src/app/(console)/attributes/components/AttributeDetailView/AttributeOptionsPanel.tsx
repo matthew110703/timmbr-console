@@ -12,6 +12,7 @@ import {
   Text,
   Divider,
   Inline,
+  Tooltip,
 } from "@timmbr/ui";
 import { Plus, Trash2, Palette } from "lucide-react";
 import { generateSlug } from "@/lib/utils/slug";
@@ -23,6 +24,7 @@ interface AttributeOptionsPanelProps {
   isFilterable: boolean;
   displayType: string;
   onSuccess?: () => void;
+  readOnly?: boolean;
 }
 
 export const AttributeOptionsPanel: React.FC<AttributeOptionsPanelProps> = ({
@@ -30,6 +32,7 @@ export const AttributeOptionsPanel: React.FC<AttributeOptionsPanelProps> = ({
   isFilterable,
   displayType,
   onSuccess,
+  readOnly = false,
 }) => {
   const {
     options,
@@ -101,7 +104,7 @@ export const AttributeOptionsPanel: React.FC<AttributeOptionsPanelProps> = ({
                   setNewOptionSlug(generateSlug(val));
                 }
               }}
-              disabled={isAddingOption}
+              disabled={isAddingOption || readOnly}
             />
           </FormField>
 
@@ -113,7 +116,7 @@ export const AttributeOptionsPanel: React.FC<AttributeOptionsPanelProps> = ({
               placeholder={strings.options.slugPlaceholder}
               value={newOptionSlug}
               onChange={(e) => setNewOptionSlug(e.target.value.toLowerCase())}
-              disabled={isAddingOption}
+              disabled={isAddingOption || readOnly}
             />
           </FormField>
         </Grid>
@@ -129,7 +132,7 @@ export const AttributeOptionsPanel: React.FC<AttributeOptionsPanelProps> = ({
                   placeholder={strings.options.hexPlaceholder}
                   value={newOptionSwatch}
                   onChange={(e) => setNewOptionSwatch(e.target.value)}
-                  disabled={isAddingOption}
+                  disabled={isAddingOption || readOnly}
                   leftAdornment={<Palette className="size-3.5" />}
                 />
               </div>
@@ -144,15 +147,31 @@ export const AttributeOptionsPanel: React.FC<AttributeOptionsPanelProps> = ({
           </FormField>
         )}
 
-        <Button
-          type="submit"
-          variant="outline"
-          size="sm"
-          loading={isAddingOption}
-          leftIcon={<Plus className="size-3.5" />}
-        >
-          {strings.options.addOption}
-        </Button>
+        {readOnly ? (
+          <Tooltip content={strings.permissions.editAttributeRequired}>
+            <span className="inline-flex">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled
+                leftIcon={<Plus className="size-3.5" />}
+              >
+                {strings.options.addOption}
+              </Button>
+            </span>
+          </Tooltip>
+        ) : (
+          <Button
+            type="submit"
+            variant="outline"
+            size="sm"
+            loading={isAddingOption}
+            leftIcon={<Plus className="size-3.5" />}
+          >
+            {strings.options.addOption}
+          </Button>
+        )}
       </form>
 
       {/* Existing Options List */}
@@ -184,16 +203,33 @@ export const AttributeOptionsPanel: React.FC<AttributeOptionsPanelProps> = ({
                 </span>
               </Inline>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-destructive"
-                onClick={() => handleDeleteOption(opt.id)}
-                aria-label={`Delete option ${opt.label}`}
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
+              {readOnly ? (
+                <Tooltip content={strings.permissions.editAttributeRequired}>
+                  <span className="inline-flex">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      disabled
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Delete option ${opt.label}`}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </span>
+                </Tooltip>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => handleDeleteOption(opt.id)}
+                  aria-label={`Delete option ${opt.label}`}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              )}
             </div>
           ))
         )}

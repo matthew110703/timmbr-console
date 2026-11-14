@@ -30,6 +30,8 @@ export interface UpdateStatusDialogProps {
   allowedStatuses: OrderStatus[];
   isSubmitting: boolean;
   onSubmit: (values: UpdateOrderStatusFormValues) => Promise<void>;
+  canCancel?: boolean;
+  canDeliver?: boolean;
 }
 
 export const UpdateStatusDialog: React.FC<UpdateStatusDialogProps> = ({
@@ -38,11 +40,21 @@ export const UpdateStatusDialog: React.FC<UpdateStatusDialogProps> = ({
   allowedStatuses,
   isSubmitting,
   onSubmit,
+  canCancel,
+  canDeliver,
 }) => {
+  const effectiveStatuses = React.useMemo(() => {
+    return allowedStatuses.filter((s) => {
+      if (s === "CANCELLED" && canCancel === false) return false;
+      if (s === "DELIVERED" && canDeliver === false) return false;
+      return true;
+    });
+  }, [allowedStatuses, canCancel, canDeliver]);
+
   const form = useForm<UpdateOrderStatusFormValues>({
     resolver: zodResolver(updateOrderStatusSchema),
     defaultValues: {
-      status: allowedStatuses[0],
+      status: effectiveStatuses[0],
       notes: "",
       verificationCode: "",
     },
@@ -51,14 +63,14 @@ export const UpdateStatusDialog: React.FC<UpdateStatusDialogProps> = ({
   const selectedStatus = form.watch("status");
 
   useEffect(() => {
-    if (open && allowedStatuses.length > 0) {
+    if (open && effectiveStatuses.length > 0) {
       form.reset({
-        status: allowedStatuses[0],
+        status: effectiveStatuses[0],
         notes: "",
         verificationCode: "",
       });
     }
-  }, [open, allowedStatuses, form]);
+  }, [open, effectiveStatuses, form]);
 
   const handleFormSubmit = form.handleSubmit(async (values) => {
     await onSubmit({
@@ -79,7 +91,7 @@ export const UpdateStatusDialog: React.FC<UpdateStatusDialogProps> = ({
         </DialogHeader>
         <form onSubmit={handleFormSubmit}>
           <DialogBody className="space-y-4">
-            {allowedStatuses.length === 0 ? (
+            {effectiveStatuses.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {strings.dialogs.noTransitions}
               </p>
@@ -87,7 +99,7 @@ export const UpdateStatusDialog: React.FC<UpdateStatusDialogProps> = ({
               <>
                 <FormField label={strings.dialogs.newStatus}>
                   <Select
-                    options={allowedStatuses.map((s) => ({
+                    options={effectiveStatuses.map((s) => ({
                       value: s,
                       label: strings.orderStatus[s],
                     }))}
@@ -128,7 +140,7 @@ export const UpdateStatusDialog: React.FC<UpdateStatusDialogProps> = ({
             <Button
               type="submit"
               loading={isSubmitting}
-              disabled={allowedStatuses.length === 0}
+              disabled={effectiveStatuses.length === 0}
             >
               {isSubmitting ? strings.dialogs.saving : strings.dialogs.confirm}
             </Button>

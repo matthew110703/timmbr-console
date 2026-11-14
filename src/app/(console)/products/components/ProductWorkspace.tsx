@@ -16,6 +16,8 @@ import {
   toast,
 } from "@timmbr/ui";
 import { PageHeader } from "@/components";
+import { usePermission } from "@/components/AuthContext";
+import { CONSOLE_PERMISSIONS } from "@/lib/auth/permissions";
 import { ProductStatusBadge } from "./ProductStatusBadge";
 import {
   ProductWorkspaceProvider,
@@ -65,6 +67,7 @@ const emptySubscribe = () => () => {};
 function ProductWorkspaceInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const canWrite = usePermission(CONSOLE_PERMISSIONS.CATALOG_WRITE);
   const hasMounted = React.useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -235,22 +238,42 @@ function ProductWorkspaceInner() {
             >
               {strings.workspace.cancel}
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleSave}
-              disabled={saveDisabled}
-            >
-              {strings.workspace.save}
-            </Button>
-            {product?.status === "DRAFT" || isCreateMode ? (
+            {!canWrite ? (
+              <Tooltip content={strings.permissions.editProductRequired}>
+                <span className="inline-flex">
+                  <Button size="sm" variant="outline" disabled>
+                    {strings.workspace.save}
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
               <Button
                 size="sm"
-                onClick={() => setPublishOpen(true)}
-                disabled={publishDisabled}
+                variant="outline"
+                onClick={handleSave}
+                disabled={saveDisabled}
               >
-                {strings.workspace.publish}
+                {strings.workspace.save}
               </Button>
+            )}
+            {product?.status === "DRAFT" || isCreateMode ? (
+              !canWrite ? (
+                <Tooltip content={strings.permissions.editProductRequired}>
+                  <span className="inline-flex">
+                    <Button size="sm" disabled>
+                      {strings.workspace.publish}
+                    </Button>
+                  </span>
+                </Tooltip>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => setPublishOpen(true)}
+                  disabled={publishDisabled}
+                >
+                  {strings.workspace.publish}
+                </Button>
+              )
             ) : null}
           </Inline>
         </Inline>

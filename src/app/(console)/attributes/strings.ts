@@ -134,4 +134,9 @@ export const strings = {
     optionDeleteSuccess: "Option removed successfully.",
     error: "Operation failed. Please try again.",
   },
+  permissions: {
+    createAttributeRequired: "You do not have permission to create attributes.",
+    editAttributeRequired: "You do not have permission to edit attributes.",
+    deleteAttributeRequired: "You do not have permission to delete attributes.",
+  },
 };

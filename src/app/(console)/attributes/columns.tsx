@@ -7,6 +7,7 @@ import {
   Checkbox,
   Stack,
   Inline,
+  Tooltip,
   type ColumnDef,
   type HeaderContext,
   type CellContext,
@@ -16,14 +17,18 @@ import { strings } from "./strings";
 import { getBadgeConfigForType, getScopeBadgeConfig } from "./helpers";
 import type { AttributeDefinition } from "./types";
 
-interface CreateAttributeColumnsOptions {
+export interface CreateAttributeColumnsOptions {
   onEdit: (attr: AttributeDefinition) => void;
   onDelete: (attr: AttributeDefinition) => void;
+  canWrite?: boolean;
+  canDelete?: boolean;
 }
 
 export function createAttributeColumns({
   onEdit,
   onDelete,
+  canWrite = true,
+  canDelete = true,
 }: CreateAttributeColumnsOptions): ColumnDef<AttributeDefinition>[] {
   return [
     {
@@ -157,27 +162,62 @@ export function createAttributeColumns({
             className="flex items-center justify-start gap-1"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(attr)}
-              aria-label={`Edit ${attr.name}`}
-              title="Edit attribute definition"
-            >
-              <Pencil className="size-3.5" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => onDelete(attr)}
-              aria-label={`Delete ${attr.name}`}
-              title="Delete attribute definition"
-            >
-              <Trash2 className="size-3.5" />
-            </Button>
+            {!canWrite ? (
+              <Tooltip content={strings.permissions.editAttributeRequired}>
+                <span className="inline-flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled
+                    aria-label={`Edit ${attr.name}`}
+                    title={strings.permissions.editAttributeRequired}
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onEdit(attr)}
+                aria-label={`Edit ${attr.name}`}
+                title="Edit attribute definition"
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+            )}
+            {!canDelete ? (
+              <Tooltip content={strings.permissions.deleteAttributeRequired}>
+                <span className="inline-flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label={`Delete ${attr.name}`}
+                    title={strings.permissions.deleteAttributeRequired}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => onDelete(attr)}
+                aria-label={`Delete ${attr.name}`}
+                title="Delete attribute definition"
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
+            )}
           </div>
         );
       },

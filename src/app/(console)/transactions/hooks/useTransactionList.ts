@@ -66,7 +66,12 @@ export function useTransactionList(
         }
 
         const res = await fetch(`/api/transactions?${query.toString()}`);
-        if (!res.ok) throw new Error("Failed to load transactions");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(
+            errData?.message || errData?.error || "Failed to load transactions",
+          );
+        }
         const json = await res.json();
         if (json.data) {
           setTransactions(json.data);
